@@ -94,6 +94,15 @@ describe 'PinController', ->
         @sut.getToken @uuid, @pin
         expect(@db.checkPin).to.have.been.calledWith @uuid, @pin
 
+      describe 'and the pin is valid', ->
+        beforeEach ->
+          @db.checkPin.yields null, true
+          @meshblu.getSessionToken = sinon.stub()
+
+        it 'it should get a session token from meshblu', ->
+          @sut.getToken @uuid, @pin
+          expect(@meshblu.getSessionToken).to.have.been.calledWith @uuid
+
     describe 'when called with a different uuid & pin', ->
       beforeEach ->
         @uuid = 'ice cream'
@@ -103,11 +112,29 @@ describe 'PinController', ->
         @sut.getToken @uuid, @pin
         expect(@db.checkPin).to.have.been.calledWith @uuid, @pin
 
-      describe 'when called with an invalid pin yields an error', ->
+      describe 'and the pin is invalid', ->
         beforeEach ->
           @db.checkPin.yields true
           @callback = sinon.stub()
 
         it 'should call the callback with an error', ->
           @sut.getToken @uuid, @pin, @callback
-          expect(@callback.args[0][0]).to.exist 
+          expect(@callback.args[0][0]).to.exist
+
+      describe 'and the pin is valid', ->
+        beforeEach ->
+          @db.checkPin.yields null, true
+          @meshblu.getSessionToken = sinon.stub()
+
+        it 'it should get a session token from meshblu', ->
+          @sut.getToken @uuid, @pin
+          expect(@meshblu.getSessionToken).to.have.been.calledWith @uuid
+
+        describe 'and meshblu.getSessionToken yields an error', ->
+          beforeEach ->
+            @meshblu.getSessionToken.yields true, 'bombastic'
+            @callback = sinon.stub()
+
+          it 'call callback with the error', ->
+            @sut.getToken @uuid, @pin, @callback
+            expect(@callback.args[0][0]).to.exist
