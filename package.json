@@ -1,0 +1,37 @@
+{
+  "name": "meshblu-pin-trusted-device",
+  "version": "1.0.0",
+  "description": "The first trusted device for meshblu!",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "chai": "^1.9.2",
+    "sinon": "^1.12.2",
+    "sinon-chai": "^2.6.0"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "coffee-script": "^1.9.0",
+    "mocha": "^2.1.0",
+    "sinon": "^1.12.2",
+    "sinon-chai": "^2.6.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/octoblu/meshblu-pin-trusted-device.git"
+  },
+  "keywords": [
+    "secureIOT"
+  ],
+  "author": "The Square Root of Saturn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/octoblu/meshblu-pin-trusted-device/issues"
+  },
+  "homepage": "https://github.com/octoblu/meshblu-pin-trusted-device"
+}
