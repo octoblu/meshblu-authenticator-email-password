@@ -4,8 +4,8 @@ describe 'PinController', ->
   beforeEach ->
     @uuid = 'uuid1'
     @meshblu = {}
-    @db = {}
-    @dependencies = meshblu : @meshblu, db: @db
+    @pinModel = {}
+    @dependencies = meshblu : @meshblu, pinModel: @pinModel
     @sut = new PinController @uuid, @dependencies
 
   describe 'constructor', ->
@@ -42,11 +42,11 @@ describe 'PinController', ->
         @uuid = 'ferk'
         @pin = 'werms'
         @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @db.save = sinon.stub()
+        @pinModel.save = sinon.stub()
         @sut.createDevice @pin
 
     it 'it should save the uuid and pin combination', ->
-      expect(@db.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
+      expect(@pinModel.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
 
   describe 'when register yields a different device', ->
     beforeEach ->
@@ -54,11 +54,11 @@ describe 'PinController', ->
         @uuid = 'fark'
         @pin = 'warms'
         @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @db.save = sinon.stub()
+        @pinModel.save = sinon.stub()
         @sut.createDevice @pin, @callback
 
     it 'it should save that uuid and pin combination', ->
-      expect(@db.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
+      expect(@pinModel.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
 
     it 'should call the callback with the uuid', ->
       expect(@callback).to.have.been.calledWith null, @uuid
@@ -69,11 +69,11 @@ describe 'PinController', ->
         @uuid = 'fork'
         @pin = 'worms'
         @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @db.save = sinon.stub()
+        @pinModel.save = sinon.stub()
         @sut.createDevice @pin, @callback
 
     it 'it should save that uuid and pin combination', ->
-      expect(@db.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
+      expect(@pinModel.save).to.have.been.calledWith { pin: @pin, uuid: @uuid }
 
     it 'should call the callback with the uuid', ->
       expect(@callback).to.have.been.calledWith null, @uuid
@@ -81,7 +81,7 @@ describe 'PinController', ->
 
   describe 'getToken', ->
     beforeEach ->
-      @db.checkPin = sinon.stub()
+      @pinModel.checkPin = sinon.stub()
 
     it 'should exist', ->
       expect(@sut.getToken).to.exist
@@ -90,13 +90,13 @@ describe 'PinController', ->
       beforeEach ->
         @uuid = 'banana'
         @pin = 'split'
-      it 'should call db.checkPin', ->
+      it 'should call pinModel.checkPin', ->
         @sut.getToken @uuid, @pin
-        expect(@db.checkPin).to.have.been.calledWith @uuid, @pin
+        expect(@pinModel.checkPin).to.have.been.calledWith @uuid, @pin
 
       describe 'and the pin is valid', ->
         beforeEach ->
-          @db.checkPin.yields null, true
+          @pinModel.checkPin.yields null, true
           @meshblu.getSessionToken = sinon.stub()
 
         it 'it should get a session token from meshblu', ->
@@ -108,13 +108,22 @@ describe 'PinController', ->
         @uuid = 'ice cream'
         @pin = 'sundae'
 
-      it 'should call db.checkPin with those params', ->
+      it 'should call pinModel.checkPin with those params', ->
         @sut.getToken @uuid, @pin
-        expect(@db.checkPin).to.have.been.calledWith @uuid, @pin
+        expect(@pinModel.checkPin).to.have.been.calledWith @uuid, @pin
+
+      describe 'and the pin causes checkPin to error', ->
+        beforeEach ->
+          @pinModel.checkPin.yields true
+          @callback = sinon.stub()
+
+        it 'should call the callback with an error', ->
+          @sut.getToken @uuid, @pin, @callback
+          expect(@callback.args[0][0]).to.exist
 
       describe 'and the pin is invalid', ->
         beforeEach ->
-          @db.checkPin.yields true
+          @pinModel.checkPin.yields null, false
           @callback = sinon.stub()
 
         it 'should call the callback with an error', ->
@@ -123,7 +132,7 @@ describe 'PinController', ->
 
       describe 'and the pin is valid', ->
         beforeEach ->
-          @db.checkPin.yields null, true
+          @pinModel.checkPin.yields null, true
           @meshblu.getSessionToken = sinon.stub()
 
         it 'it should get a session token from meshblu', ->
