@@ -1,7 +1,7 @@
 class PinModel
 
   constructor: (dependencies) ->
-    @db = dependencies?.db || {}
+    @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
   save: (uuid, pin, callback=->)=>

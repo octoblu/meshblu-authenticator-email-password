@@ -1,7 +1,7 @@
 class PinController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
-    @meshblu = dependencies?.meshblu || require 'meshblu'
+    @meshblu = dependencies?.meshblu
     @pinModel = dependencies?.pinModel || new require '../models/pin-model'
 
   createDevice : (pin, callback=->) =>
