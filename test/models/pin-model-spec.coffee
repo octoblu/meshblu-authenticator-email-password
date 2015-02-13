@@ -83,7 +83,7 @@ describe 'PinModel', ->
 
       it 'should call bcrypt.hash on the pin', ->
         @sut.save @uuid, @pin
-        expect(@bcrypt.hash).to.have.been.calledWith @pin, null, null
+        expect(@bcrypt.hash).to.have.been.calledWith @pin
 
       describe 'when bcrypt.hash yields an error', ->
         beforeEach ->
@@ -113,7 +113,7 @@ describe 'PinModel', ->
 
       it 'should call bcrypt.hash on the pin', ->
         @sut.save(@uuid, @pin)
-        expect(@bcrypt.hash).to.have.been.calledWith @pin, null
+        expect(@bcrypt.hash).to.have.been.calledWith @pin
 
       describe 'when bcrypt.hash succeeds', ->
         beforeEach ->

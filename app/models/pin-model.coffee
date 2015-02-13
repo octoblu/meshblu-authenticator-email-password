@@ -5,7 +5,7 @@ class PinModel
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
   save: (uuid, pin, callback=->)=>
-    @bcrypt.hash pin, null, null, (error, hash)=>
+    @bcrypt.hash pin, 10, (error, hash)=>
       return callback(error) if error?
       @db.insert { uuid: uuid, pin: hash }, callback
 

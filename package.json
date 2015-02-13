@@ -1,14 +1,17 @@
 {
-  "name": "meshblu-pin-trusted-device",
+  "name": "meshblu-pin-authenticator",
   "version": "1.0.0",
   "description": "The first trusted device for meshblu!",
-  "main": "index.js",
+  "main": "command.coffee",
   "directories": {
     "test": "test"
   },
   "dependencies": {
+    "bcrypt": "^0.8.1",
     "chai": "^1.9.2",
+    "debug": "^2.1.1",
     "lodash": "^3.1.0",
+    "meshblu": "^1.14.0",
     "sinon": "^1.12.2",
     "sinon-chai": "^2.6.0"
   },
@@ -20,6 +23,7 @@
     "sinon-chai": "^2.6.0"
   },
   "scripts": {
+    "start": "node command.js",
     "test": "mocha"
   },
   "repository": {

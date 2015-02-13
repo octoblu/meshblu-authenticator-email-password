@@ -43,6 +43,13 @@ describe 'MeshbluDb', ->
           @sut.findOne {uuid: @uuid2}, @callback
           expect(@callback).to.have.been.calledWith null, @pins[0]
 
+        describe 'when findOne is called with a query for a device that doesn\'t exist', ->
+          beforeEach ->
+            @badUuid = 'Erik'
+          it 'should yield an error', ->
+            @sut.findOne {uuid: @badUuid}, @callback
+            expect(@callback.args[0][0]).to.exist
+
   describe 'insert', ->
     it 'should exist',  ->
       expect(@sut.insert).to.exist
