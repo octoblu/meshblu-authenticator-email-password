@@ -1,5 +1,6 @@
 PinModel = require '../models/pin-model'
 MeshbluDb = require '../models/meshblu-db'
+_ = require 'lodash'
 
 class PinController
   constructor : (uuid, dependencies) ->
@@ -7,8 +8,11 @@ class PinController
     @meshblu = dependencies?.meshblu
     @pinModel = dependencies?.pinModel || new PinModel( db: new MeshbluDb( @meshblu ))
 
-  createDevice : (pin, callback=->) =>
-    @meshblu.register { configureWhitelist : [ @uuid ] }, (device) =>
+  createDevice : (pin, device={}, callback=->) =>
+    attributes = _.cloneDeep device
+    attributes.configureWhitelist ?= []
+    attributes.configureWhitelist.push @uuid
+    @meshblu.register attributes, (device) =>
       @pinModel.save device.uuid, pin, (error) ->
         callback error, device.uuid
 

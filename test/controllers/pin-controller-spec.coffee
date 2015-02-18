@@ -25,52 +25,69 @@ describe 'PinController', ->
         expect(@meshblu.register).to.have.been.called;
 
       it 'should add its uuid to a configure whitelist', ->
-        expect(@meshblu.register.args[0][0].configureWhitelist).to.deep.equal [@uuid]
+        expect(@meshblu.register.firstCall.args[0].configureWhitelist).to.deep.equal [@uuid]
 
-    describe 'when PinController was constructed with a different uuid and createDevice is called', ->
+    describe 'when PinController was constructed with a different uuid', ->
       beforeEach ->
-        @uuid2 = 'uuid2'
-        @sut = new PinController @uuid2, @dependencies
+        @uuid = 'uuid2'
+        @sut = new PinController @uuid, @dependencies
         @meshblu.register = sinon.stub()
-        @sut.createDevice()
 
-      it 'should call meshblu.register with the different uuid in the whitelist', ->
-        expect(@meshblu.register.args[0][0].configureWhitelist).to.deep.equal [@uuid2]
+      describe 'when createDevice is called', ->
+        beforeEach ->
+          @sut.createDevice()
+
+        it 'should call meshblu.register with the uuid in the whitelist', ->
+          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: [@uuid]
+
+      describe 'when createDevice is called with some device properties', ->
+        beforeEach ->
+          @sut.createDevice '1234', foo: 'bar'
+
+        it 'should call meshblu.register device properties merged in', ->
+          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: [@uuid], foo: 'bar'
+
+      describe 'when createDevice is called with a configureWhitelist', ->
+        beforeEach ->
+          @sut.createDevice '1234', configureWhitelist: ['73d0f6da-4b5d-4880-9f78-f48ed1b51704']
+
+        it 'should call meshblu.register device properties merged in', ->
+          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: ['73d0f6da-4b5d-4880-9f78-f48ed1b51704', @uuid]
 
   describe 'when register yields a new device', ->
     beforeEach ->
-        @uuid = 'ferk'
-        @pin = 'werms'
-        @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @pinModel.save = sinon.stub()
-        @sut.createDevice @pin
+      @uuid = 'ferk'
+      @pin = 'werms'
+      @meshblu.register = sinon.stub().yields { uuid: @uuid }
+      @pinModel.save = sinon.stub()
+      @sut.createDevice @pin, {}
 
     it 'it should save the uuid and pin combination', ->
       expect(@pinModel.save).to.have.been.calledWith @uuid, @pin
 
-  describe 'when register yields a different device', ->
-    beforeEach ->
-        @callback = sinon.stub()
-        @uuid = 'fark'
-        @pin = 'warms'
-        @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @pinModel.save = sinon.stub().yields(null)
-        @sut.createDevice @pin, @callback
+  describe 'when register yields a different device and save yields', ->
+    beforeEach (done) ->
+      @callback = sinon.stub()
+      @uuid = 'fark'
+      @pin = 'warms'
+      @meshblu.register = sinon.stub().yields { uuid: @uuid }
+      @pinModel.save = sinon.stub().yields(null)
+      @sut.createDevice @pin, null, (error, @result) => done()
 
     it 'it should save that uuid and pin combination', ->
       expect(@pinModel.save).to.have.been.calledWith @uuid, @pin
 
-    it 'should call the callback with the uuid', ->
-      expect(@callback).to.have.been.calledWith null, @uuid
+    it 'should yield the uuid', ->
+      expect(@result).to.equal @uuid
 
   describe 'when register yields a different different device', ->
     beforeEach ->
-        @callback = sinon.stub()
-        @uuid = 'fork'
-        @pin = 'worms'
-        @meshblu.register = sinon.stub().yields { uuid: @uuid }
-        @pinModel.save = sinon.stub().yields(null)
-        @sut.createDevice @pin, @callback
+      @callback = sinon.stub()
+      @uuid = 'fork'
+      @pin = 'worms'
+      @meshblu.register = sinon.stub().yields { uuid: @uuid }
+      @pinModel.save = sinon.stub().yields(null)
+      @sut.createDevice @pin, null, @callback
 
     it 'it should save that uuid and pin combination', ->
       expect(@pinModel.save).to.have.been.calledWith @uuid, @pin

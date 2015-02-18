@@ -6,9 +6,8 @@ class DeviceController
     @pinController = new PinController uuid, meshblu: meshblu
 
   create: (request, response) =>
-    pin = request.body.pin
-    debug request.body
-    @pinController.createDevice pin, (error, uuid) =>
+    {device, pin} = request.body
+    @pinController.createDevice pin, device, (error, uuid) =>
       return response.status(500).send error: error.message if error?
       response.status(201).send uuid: uuid
 
