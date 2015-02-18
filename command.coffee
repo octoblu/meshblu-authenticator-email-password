@@ -3,8 +3,16 @@ morgan       = require 'morgan'
 errorHandler = require 'errorhandler'
 bodyParser   = require 'body-parser'
 meshblu      = require 'meshblu'
-meshbluJSON  = require './meshblu.json'
 Routes       = require './app/routes'
+
+try
+  meshbluJSON  = require './meshblu.json'
+catch
+  meshbluJSON =
+    uuid:   process.env.PIN_AUTHENTICATOR_UUID
+    token:  process.env.PIN_AUTHENTICATOR_TOKEN
+    server: process.env.MESHBLU_HOST
+    port:   process.env.MESHBLU_PORT
 
 port = process.env.PIN_AUTHENTICATOR_PORT ? 3003
 
