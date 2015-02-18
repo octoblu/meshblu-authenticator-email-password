@@ -16,6 +16,7 @@ class PinController
     @pinModel.checkPin uuid, pin, (error, result)=>
       return callback(error) if error
       return callback( new Error 'Pin is invalid') if !result
-      @meshblu.getSessionToken uuid, callback
+      @meshblu.generateAndStoreToken uuid: uuid, (result) =>
+        callback null, result
 
 module.exports = PinController

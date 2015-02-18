@@ -4,10 +4,10 @@ SessionController = require './controllers/session-controller'
 class Routes
   constructor: (@app, uuid, meshblu) ->
     @deviceController  = new DeviceController uuid, meshblu
-    @sessionController = new SessionController
+    @sessionController = new SessionController uuid, meshblu
 
   register: =>
-    @app.post '/device',       @deviceController.create
-    @app.post '/device/:uuid', @sessionController.create
+    @app.post '/devices',                @deviceController.create
+    @app.post '/devices/:uuid/sessions', @sessionController.create
 
 module.exports = Routes

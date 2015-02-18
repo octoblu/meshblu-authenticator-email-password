@@ -97,11 +97,11 @@ describe 'PinController', ->
       describe 'and the pin is valid', ->
         beforeEach ->
           @pinModel.checkPin.yields null, true
-          @meshblu.getSessionToken = sinon.stub()
+          @meshblu.generateAndStoreToken = sinon.stub()
 
         it 'it should get a session token from meshblu', ->
           @sut.getToken @uuid, @pin
-          expect(@meshblu.getSessionToken).to.have.been.calledWith @uuid
+          expect(@meshblu.generateAndStoreToken).to.have.been.calledWith uuid: @uuid
 
     describe 'when called with a different uuid & pin', ->
       beforeEach ->
@@ -133,17 +133,17 @@ describe 'PinController', ->
       describe 'and the pin is valid', ->
         beforeEach ->
           @pinModel.checkPin.yields null, true
-          @meshblu.getSessionToken = sinon.stub()
+          @meshblu.generateAndStoreToken = sinon.stub()
 
         it 'it should get a session token from meshblu', ->
           @sut.getToken @uuid, @pin
-          expect(@meshblu.getSessionToken).to.have.been.calledWith @uuid
+          expect(@meshblu.generateAndStoreToken).to.have.been.calledWith uuid: @uuid
 
-        describe 'and meshblu.getSessionToken yields an error', ->
-          beforeEach ->
-            @meshblu.getSessionToken.yields true, 'bombastic'
-            @callback = sinon.stub()
+        describe 'and meshblu.generateAndStoreToken yields token', ->
+          beforeEach (done) ->
+            @meshblu.generateAndStoreToken.yields token: 'bombastic'
+            @sut.getToken @uuid, @pin, (@error, @result) => done()
 
           it 'call callback with the error', ->
-            @sut.getToken @uuid, @pin, @callback
-            expect(@callback.args[0][0]).to.exist
+            expect(@result.token).to.equal 'bombastic'
+
