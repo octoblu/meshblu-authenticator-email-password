@@ -2,6 +2,7 @@ express      = require 'express'
 morgan       = require 'morgan'
 errorHandler = require 'errorhandler'
 bodyParser   = require 'body-parser'
+cors         = require 'cors'
 meshblu      = require 'meshblu'
 Routes       = require './app/routes'
 
@@ -21,6 +22,7 @@ app.use morgan('combined')
 app.use errorHandler()
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
+app.use cors()
 
 conn = meshblu.createConnection meshbluJSON
 conn.on 'ready', ->
