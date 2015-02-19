@@ -1,12 +1,12 @@
 PinModel = require '../models/pin-model'
-MeshbluDb = require '../models/meshblu-db'
+PinAuthenticatorDb = require '../models/pin-authenticator-db'
 _ = require 'lodash'
 
 class PinController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
     @meshblu = dependencies?.meshblu
-    @pinModel = dependencies?.pinModel || new PinModel( db: new MeshbluDb( @meshblu ))
+    @pinModel = dependencies?.pinModel || new PinModel( db: new PinAuthenticatorDb( @meshblu ))
 
   createDevice : (pin, device={}, callback=->) =>
     attributes = _.cloneDeep device
