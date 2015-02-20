@@ -10,7 +10,7 @@ class PinModel
       return callback(error) if error?
       @db.insert _.extend({pin: hash}, attributes), callback
 
-  checkPin: (uuid, pin, callback=->)=>
+  checkPin: (uuid, pin='', callback=->)=>
     @db.findOne { uuid: uuid }, (error, res)=>
       return callback(error) if error?
       @bcrypt.compare pin, res.pin, callback
