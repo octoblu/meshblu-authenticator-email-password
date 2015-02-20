@@ -9,7 +9,7 @@ class SessionController
     pin  = request.body.pin
 
     @pinController.getToken uuid, pin, (error, device) =>
-      return response.status(401).send error: error if error?
+      return response.status(401).send error.message if error?
       response.status(201).send token: device.token
 
 module.exports = SessionController
