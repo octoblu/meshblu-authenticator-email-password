@@ -31,3 +31,6 @@ conn.on 'ready', ->
 
   app.listen port, =>
     console.log "listening at localhost:#{port}"
+
+conn.on 'notReady', ->
+  console.error "Unable to establish a connection to meshblu"
