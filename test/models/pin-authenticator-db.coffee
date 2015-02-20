@@ -29,7 +29,7 @@ describe 'PinAuthenticatorDb', ->
           @callback = sinon.stub()
 
         it 'it should return a record that matches the findOne query', ->
-          @meshblu.devices.yields([{
+          @meshblu.devices.yields( devices: [{
             uuid: @uuid
             pin : @pin
           }])
@@ -39,7 +39,7 @@ describe 'PinAuthenticatorDb', ->
         it 'it should return a record that matches the findOne query', ->
           @uuid = '56789'
           @pin = '1337'
-          @meshblu.devices.yields([{
+          @meshblu.devices.yields( devices: [{
             uuid: @uuid
             pin : @pin
           }])
@@ -48,7 +48,7 @@ describe 'PinAuthenticatorDb', ->
 
         describe 'when findOne is called with a query for a device that doesn\'t exist', ->
           beforeEach ->
-             @meshblu.devices.yields []
+            @meshblu.devices.yields devices: []
             @badUuid = 'Erik'
           it 'should yield an error', ->
             @sut.findOne {uuid: @badUuid}, @callback
@@ -83,5 +83,5 @@ describe 'PinAuthenticatorDb', ->
             @meshblu.update.yields @device
           it 'should call it\'s callback the node way', ->
             @sut.insert @rec3, @callback
-            expect(@callback).to.have.been.calledWith null, true
+            expect(@callback).to.have.been.calledWith null, @device
 

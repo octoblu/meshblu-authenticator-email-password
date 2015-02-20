@@ -18,64 +18,62 @@ describe 'PinController', ->
 
     describe 'when called', ->
       beforeEach ->
-        @meshblu.register = sinon.stub()
+        @pinModel.save = sinon.stub()
         @sut.createDevice()
 
-      it 'should call register on meshblu', ->
-        expect(@meshblu.register).to.have.been.called;
+      it 'should call save on pinModel', ->
+        expect(@pinModel.save).to.have.been.called;
 
       it 'should add its uuid to a configure whitelist', ->
-        expect(@meshblu.register.firstCall.args[0].configureWhitelist).to.deep.equal [@uuid]
+        expect(@pinModel.save.firstCall.args[1].configureWhitelist).to.deep.equal [@uuid]
 
     describe 'when PinController was constructed with a different uuid', ->
       beforeEach ->
         @uuid = 'uuid2'
         @sut = new PinController @uuid, @dependencies
-        @meshblu.register = sinon.stub()
+        @pinModel.save = sinon.stub()
 
       describe 'when createDevice is called', ->
         beforeEach ->
           @sut.createDevice()
 
         it 'should call meshblu.register with the uuid in the whitelist', ->
-          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: [@uuid]
+          expect(@pinModel.save).to.have.been.calledWith undefined, configureWhitelist: [@uuid]
 
       describe 'when createDevice is called with some device properties', ->
         beforeEach ->
           @sut.createDevice '1234', foo: 'bar'
 
         it 'should call meshblu.register device properties merged in', ->
-          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: [@uuid], foo: 'bar'
+          expect(@pinModel.save).to.have.been.calledWith '1234', configureWhitelist: [@uuid], foo: 'bar'
 
       describe 'when createDevice is called with a configureWhitelist', ->
         beforeEach ->
           @sut.createDevice '1234', configureWhitelist: ['73d0f6da-4b5d-4880-9f78-f48ed1b51704']
 
         it 'should call meshblu.register device properties merged in', ->
-          expect(@meshblu.register).to.have.been.calledWith configureWhitelist: ['73d0f6da-4b5d-4880-9f78-f48ed1b51704', @uuid]
+          expect(@pinModel.save).to.have.been.calledWith '1234', configureWhitelist: ['73d0f6da-4b5d-4880-9f78-f48ed1b51704', @uuid]
 
   describe 'when register yields a new device', ->
     beforeEach ->
       @uuid = 'ferk'
       @pin = 'werms'
-      @meshblu.register = sinon.stub().yields { uuid: @uuid }
-      @pinModel.save = sinon.stub()
+      @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
       @sut.createDevice @pin, {}
 
     it 'it should save the uuid and pin combination', ->
-      expect(@pinModel.save).to.have.been.calledWith @uuid, @pin
+      expect(@pinModel.save).to.have.been.calledWith @pin, { configureWhitelist: [ 'uuid1'] }
 
   describe 'when register yields a different device and save yields', ->
     beforeEach (done) ->
       @callback = sinon.stub()
       @uuid = 'fark'
       @pin = 'warms'
-      @meshblu.register = sinon.stub().yields { uuid: @uuid }
-      @pinModel.save = sinon.stub().yields(null)
+      @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
       @sut.createDevice @pin, null, (error, @result) => done()
 
     it 'it should save that uuid and pin combination', ->
-      expect(@pinModel.save).to.have.been.calledWith @uuid, @pin
+      expect(@pinModel.save).to.have.been.calledWith @pin, { configureWhitelist: [ 'uuid1'] }
 
     it 'should yield the uuid', ->
       expect(@result).to.equal @uuid
@@ -85,12 +83,11 @@ describe 'PinController', ->
       @callback = sinon.stub()
       @uuid = 'fork'
       @pin = 'worms'
-      @meshblu.register = sinon.stub().yields { uuid: @uuid }
-      @pinModel.save = sinon.stub().yields(null)
+      @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
       @sut.createDevice @pin, null, @callback
 
     it 'it should save that uuid and pin combination', ->
-      expect(@pinModel.save).to.have.been.calledWith @uuid, @pin
+      expect(@pinModel.save).to.have.been.calledWith @pin, { configureWhitelist: [ 'uuid1'] }
 
     it 'should call the callback with the uuid', ->
       expect(@callback).to.have.been.calledWith null, @uuid

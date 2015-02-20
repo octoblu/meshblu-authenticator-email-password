@@ -12,9 +12,9 @@ class PinController
     attributes = _.cloneDeep device
     attributes.configureWhitelist ?= []
     attributes.configureWhitelist.push @uuid
-    @meshblu.register attributes, (device) =>
-      @pinModel.save device.uuid, pin, (error) ->
-        callback error, device.uuid
+
+    @pinModel.save pin, attributes, (error, device) ->
+      callback error, device.uuid
 
   getToken : (uuid, pin, callback=->) =>
     @pinModel.checkPin uuid, pin, (error, result)=>

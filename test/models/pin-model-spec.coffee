@@ -75,14 +75,13 @@ describe 'PinModel', ->
     it 'should exist', ->
       expect(@sut.save).to.exist
 
-    describe 'when called with a uuid and a pin', ->
+    describe 'when called with a pin and attributes', ->
       beforeEach ->
-        @uuid = 'Count'
         @pin = 'Chocula'
         @bcrypt.hash = sinon.stub()
 
       it 'should call bcrypt.hash on the pin', ->
-        @sut.save @uuid, @pin
+        @sut.save @pin, {}
         expect(@bcrypt.hash).to.have.been.calledWith @pin
 
       describe 'when bcrypt.hash yields an error', ->
@@ -91,7 +90,7 @@ describe 'PinModel', ->
           @bcrypt.hash.yields true
 
         it 'should call the callback with an error', ->
-          @sut.save @uuid, @pin, @callback
+          @sut.save @pin, {}, @callback
           expect(@callback.args[0][0]).to.exist
 
       describe 'when bcrypt.hash succeeds', ->
@@ -102,17 +101,16 @@ describe 'PinModel', ->
           @db.insert = sinon.stub()
 
         it 'should call db.insert with an object that has UUID and hash and also the callback', ->
-          @sut.save @uuid, @pin, @callback
-          expect(@db.insert).to.have.been.calledWith { uuid: @uuid, pin: @hash }, @callback
+          @sut.save @pin, {}, @callback
+          expect(@db.insert).to.have.been.calledWith { pin: @hash }, @callback
 
-    describe 'when called with a different uuid and pin', ->
+    describe 'when called with a different pin', ->
       beforeEach ->
-        @uuid = 'Sweedish'
         @pin = 'Chef'
         @bcrypt.hash = sinon.stub()
 
       it 'should call bcrypt.hash on the pin', ->
-        @sut.save(@uuid, @pin)
+        @sut.save @pin
         expect(@bcrypt.hash).to.have.been.calledWith @pin
 
       describe 'when bcrypt.hash succeeds', ->
@@ -123,6 +121,6 @@ describe 'PinModel', ->
           @db.insert = sinon.stub()
 
         it 'should call db.insert with an object that has UUID and hash and also the callback', ->
-          @sut.save @uuid, @pin, @callback
-          expect(@db.insert).to.have.been.calledWith { uuid: @uuid, pin: @hash }, @callback
+          @sut.save @pin, {}, @callback
+          expect(@db.insert).to.have.been.calledWith { pin: @hash }, @callback
 

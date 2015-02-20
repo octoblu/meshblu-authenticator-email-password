@@ -5,13 +5,16 @@ class PinAuthenticatorDb
   constructor: (@meshblu) ->
 
   findOne : (query, callback=->)=>
-    @meshblu.devices query, (devices)=>
-      return callback new Error 'record not found' if !devices.length
-      callback null, devices[0]
+    @meshblu.devices query, (res)=>
+      debug "found devices: ", res.devices
+      return callback new Error 'record not found' if !res.devices.length
+      callback null, res.devices[0]
 
 
   insert: (record, callback=->) =>
+    debug "writing", record
     @meshblu.update record, (device) =>
-      callback null, true
+      debug "insert response", device
+      callback null, device
 
 module.exports = PinAuthenticatorDb
