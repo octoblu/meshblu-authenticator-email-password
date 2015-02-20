@@ -58,7 +58,9 @@ describe 'PinController', ->
     beforeEach ->
       @uuid = 'ferk'
       @pin = 'werms'
+      @token = '123'
       @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
+      @meshblu.generateAndStoreToken = sinon.stub().yields {token:@token}
       @sut.createDevice @pin, {}
 
     it 'it should save the uuid and pin combination', ->
@@ -69,28 +71,32 @@ describe 'PinController', ->
       @callback = sinon.stub()
       @uuid = 'fark'
       @pin = 'warms'
+      @token = 'aaaaaron'
       @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
+      @meshblu.generateAndStoreToken = sinon.stub().yields {token:@token}
       @sut.createDevice @pin, null, (error, @result) => done()
 
     it 'it should save that uuid and pin combination', ->
       expect(@pinModel.save).to.have.been.calledWith @pin, { configureWhitelist: [ 'uuid1'] }
 
     it 'should yield the uuid', ->
-      expect(@result).to.equal @uuid
+      expect(@result).to.deep.equal { uuid: @uuid, token: @token}
 
   describe 'when register yields a different different device', ->
     beforeEach ->
       @callback = sinon.stub()
       @uuid = 'fork'
       @pin = 'worms'
+      @token = 'cats'
       @pinModel.save = sinon.stub().yields null, { uuid: @uuid }
+      @meshblu.generateAndStoreToken = sinon.stub().yields {token:@token}
       @sut.createDevice @pin, null, @callback
 
     it 'it should save that uuid and pin combination', ->
       expect(@pinModel.save).to.have.been.calledWith @pin, { configureWhitelist: [ 'uuid1'] }
 
     it 'should call the callback with the uuid', ->
-      expect(@callback).to.have.been.calledWith null, @uuid
+      expect(@callback).to.have.been.calledWith null, { uuid: @uuid, token: @token }
 
 
   describe 'getToken', ->

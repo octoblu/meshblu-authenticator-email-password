@@ -13,8 +13,12 @@ class PinController
     attributes.configureWhitelist ?= []
     attributes.configureWhitelist.push @uuid
 
-    @pinModel.save pin, attributes, (error, device) ->
-      callback error, device?.uuid
+    @pinModel.save pin, attributes, (error, device) =>
+      if (error)
+        return callback error, device?.uuid
+
+      @meshblu.generateAndStoreToken uuid: device?.uuid, (result) =>
+        callback null, { uuid: device?.uuid, token: result?.token }
 
   getToken : (uuid, pin, callback=->) =>
     @pinModel.checkPin uuid, pin, (error, result)=>

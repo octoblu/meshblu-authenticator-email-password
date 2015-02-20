@@ -65,23 +65,22 @@ describe 'PinAuthenticatorDb', ->
         @meshblu.register = sinon.stub()
         @callback = sinon.stub()
 
-      it 'should call meshblu.update', ->
+      it 'should call meshblu.register', ->
         @sut.insert uuid: @uuid, pin: @pin
         expect(@meshblu.register).to.have.been.calledWith uuid: @uuid, pin: @pin
 
-      describe 'and update yields a different device', ->
+      describe 'and register yields a different device', ->
         beforeEach ->
           @device = uuid: 2, alarm: false
           @meshblu.register.yields @device
 
-        it 'should call meshblu.update with the device record with a "pins" key containing the pin', ->
+        it 'should call meshblu.register with the device record with a "pins" key containing the pin', ->
           @sut.insert @device
           expect(@meshblu.register).to.have.been.calledWith @device
 
-        describe 'when meshblu.update yields the device', ->
+        describe 'when meshblu.register yields the device', ->
           beforeEach ->
             @meshblu.register.yields @device
           it 'should call it\'s callback the node way', ->
             @sut.insert @rec3, @callback
             expect(@callback).to.have.been.calledWith null, @device
-
