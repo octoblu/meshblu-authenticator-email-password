@@ -14,8 +14,8 @@ class DeviceController
     {device, pin} = request.body
     device ?= {}
     device.ipAddress ?= @ipAddress(request)
-    @pinController.createDevice pin, device, (error, response) =>
+    @pinController.createDevice pin, device, (error, device) =>
       return response.status(500).send error.message if error?
-      response.status(201).send response
+      response.status(201).send device
 
 module.exports = DeviceController
