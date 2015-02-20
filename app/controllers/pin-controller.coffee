@@ -14,7 +14,7 @@ class PinController
     attributes.configureWhitelist.push @uuid
 
     @pinModel.save pin, attributes, (error, device) ->
-      callback error, device.uuid
+      callback error, device?.uuid
 
   getToken : (uuid, pin, callback=->) =>
     @pinModel.checkPin uuid, pin, (error, result)=>

@@ -13,7 +13,7 @@ class PinAuthenticatorDb
 
   insert: (record, callback=->) =>
     debug "writing", record
-    @meshblu.update record, (device) =>
+    @meshblu.register record, (device) =>
       debug "insert response", device
       callback null, device
 

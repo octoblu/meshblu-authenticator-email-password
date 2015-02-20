@@ -3,7 +3,7 @@ PinAuthenticatorDb = require '../../app/models/pin-authenticator-db'
 describe 'PinAuthenticatorDb', ->
   beforeEach ->
     @meshblu = {}
-    @meshblu.update = sinon.stub()
+    @meshblu.register = sinon.stub()
     @sut = new PinAuthenticatorDb @meshblu
 
   describe 'constructor', ->
@@ -62,25 +62,25 @@ describe 'PinAuthenticatorDb', ->
       beforeEach ->
         @uuid = '84DA55'
         @pin = '80085'
-        @meshblu.update = sinon.stub()
+        @meshblu.register = sinon.stub()
         @callback = sinon.stub()
 
       it 'should call meshblu.update', ->
         @sut.insert uuid: @uuid, pin: @pin
-        expect(@meshblu.update).to.have.been.calledWith uuid: @uuid, pin: @pin
+        expect(@meshblu.register).to.have.been.calledWith uuid: @uuid, pin: @pin
 
       describe 'and update yields a different device', ->
         beforeEach ->
           @device = uuid: 2, alarm: false
-          @meshblu.update.yields @device
+          @meshblu.register.yields @device
 
         it 'should call meshblu.update with the device record with a "pins" key containing the pin', ->
           @sut.insert @device
-          expect(@meshblu.update).to.have.been.calledWith @device
+          expect(@meshblu.register).to.have.been.calledWith @device
 
         describe 'when meshblu.update yields the device', ->
           beforeEach ->
-            @meshblu.update.yields @device
+            @meshblu.register.yields @device
           it 'should call it\'s callback the node way', ->
             @sut.insert @rec3, @callback
             expect(@callback).to.have.been.calledWith null, @device
