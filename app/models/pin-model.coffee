@@ -1,14 +1,17 @@
 _ = require 'lodash'
 class PinModel
 
-  constructor: (dependencies) ->
+  constructor: (uuid, dependencies) ->
+    @uuid = uuid;
     @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
   save: (pin, attributes, callback=->)=>
     @bcrypt.hash pin, 10, (error, hash)=>
       return callback(error) if error?
-      @db.insert _.extend({pin: hash}, attributes), callback
+      device = _.clone attributes
+      device[@uuid] = hash
+      @db.insert device, callback
 
   checkPin: (uuid, pin='', callback=->)=>
     @db.findOne { uuid: uuid }, (error, res)=>

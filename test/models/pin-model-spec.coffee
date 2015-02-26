@@ -5,7 +5,7 @@ describe 'PinModel', ->
     @db = {}
     @bcrypt = {}
     @dependencies = db: @db, bcrypt: @bcrypt
-    @sut = new PinModel @dependencies
+    @sut = new PinModel '7f03f82a-e637-45cb-9b79-1b0d53edead4', @dependencies
 
   describe 'constructor', ->
     it 'should instantiate a PinModel', ->
@@ -102,25 +102,38 @@ describe 'PinModel', ->
 
         it 'should call db.insert with an object that has UUID and hash and also the callback', ->
           @sut.save @pin, {}, @callback
-          expect(@db.insert).to.have.been.calledWith { pin: @hash }, @callback
+          expect(@db.insert).to.have.been.calledWith { '7f03f82a-e637-45cb-9b79-1b0d53edead4' : @hash }, @callback
 
     describe 'when called with a different pin', ->
       beforeEach ->
-        @pin = 'Chef'
         @bcrypt.hash = sinon.stub()
 
       it 'should call bcrypt.hash on the pin', ->
-        @sut.save @pin
-        expect(@bcrypt.hash).to.have.been.calledWith @pin
+        @sut.save 'Chef'
+        expect(@bcrypt.hash).to.have.been.calledWith 'Chef'
 
-      describe 'when bcrypt.hash succeeds', ->
-        beforeEach ->
-          @callback = sinon.stub()
-          @hash = 'meatballs'
-          @bcrypt.hash.yields null, @hash
-          @db.insert = sinon.stub()
+    describe 'when bcrypt.hash succeeds', ->
+      beforeEach ->
+        @callback = sinon.stub()
+        @bcrypt.hash = sinon.stub().yields null, 'meatballs'
+        @db.insert = sinon.stub()
 
-        it 'should call db.insert with an object that has UUID and hash and also the callback', ->
-          @sut.save @pin, {}, @callback
-          expect(@db.insert).to.have.been.calledWith { pin: @hash }, @callback
+      it 'should call db.insert with an object that has UUID and hash and also the callback', ->
+        @sut.save @pin, {}, @callback
+        expect(@db.insert).to.have.been.calledWith { '7f03f82a-e637-45cb-9b79-1b0d53edead4': 'meatballs' }, @callback
+
+  describe 'when instantiated with a different uuid', ->
+    beforeEach ->
+      @sut = new PinModel '01a27f44-0063-4c1a-8fd3-336b2d193c0a', @dependencies
+
+    describe 'when bcrypt.hash succeeds', ->
+      beforeEach ->
+        @callback = sinon.stub()
+        @bcrypt.hash = sinon.stub().yields null, "But didn't it feel so right?"
+        @db.insert = sinon.stub()
+
+      it 'should call db.insert with an object that has UUID and hash and also the callback', ->
+        @sut.save 'Things go wrong', {}, @callback
+        expect(@db.insert).to.have.been.calledWith { '01a27f44-0063-4c1a-8fd3-336b2d193c0a': "But didn't it feel so right?" }, @callback
+      
 
