@@ -20,11 +20,11 @@ class EmailPasswordController
       @meshblu.generateAndStoreToken uuid: device?.uuid, (result) =>
         callback null, { uuid: device?.uuid, token: result?.token }
 
-  getToken : (uuid, pin, callback=->) =>
-    @emailPasswordModel.checkEmailPassword uuid, pin, (error, result)=>
+  getToken : (email, password, callback=->) =>
+    @emailPasswordModel.checkEmailPassword email, password, (error, device)=>
       return callback(error) if error
-      return callback( new Error 'Email and password combination is invalid') if !result
-      @meshblu.generateAndStoreToken uuid: uuid, (result) =>
+      return callback( new Error 'Email and password combination is invalid') unless device?
+      @meshblu.generateAndStoreToken uuid: device.uuid, (result) =>
         callback null, result
 
 module.exports = EmailPasswordController

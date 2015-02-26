@@ -82,9 +82,9 @@ describe 'EmailPasswordController', ->
       it 'should call emailPasswordModel.checkEmailPassword', ->
         expect(@emailPasswordModel.checkEmailPassword).to.have.been.calledWith 'Timber', 'Wood'
 
-    describe 'when called and checkEmailPassword yields true', ->
+    describe 'when called and checkEmailPassword yields a device', ->
       beforeEach ->
-        @emailPasswordModel.checkEmailPassword.yields null, true
+        @emailPasswordModel.checkEmailPassword.yields null, {uuid: 'Tray'}
         @meshblu.generateAndStoreToken = sinon.stub()
         @sut.getToken 'Tray', 'Table'
 
@@ -100,36 +100,36 @@ describe 'EmailPasswordController', ->
 
     describe 'when called and checkEmailPassword yields an error', ->
       beforeEach ->
-        @emailPasswordModel.checkEmailPassword.yields true
+        @emailPasswordModel.checkEmailPassword.yields new Error('whoops')
         @callback = sinon.stub()
 
       it 'should call the callback with an error', ->
         @sut.getToken 'Impatient', 'Vulture', @callback
         expect(@callback.args[0][0]).to.exist
 
-    describe 'when called and checkEmailPassword yields false', ->
+    describe 'when called and checkEmailPassword yields no device', ->
       beforeEach ->
-        @emailPasswordModel.checkEmailPassword.yields null, false
+        @emailPasswordModel.checkEmailPassword.yields null, null
         @callback = sinon.stub()
 
       it 'should call the callback with an error', ->
         @sut.getToken @uuid, @password, @callback
         expect(@callback.args[0][0]).to.exist
 
-    describe 'when called and the checkEmailPassword yields true', ->
+    describe 'when called and the checkEmailPassword yields an object', ->
       beforeEach ->
-        @emailPasswordModel.checkEmailPassword.yields null, true
+        @emailPasswordModel.checkEmailPassword.yields null, {uuid: 'helicopter'}
         @meshblu.generateAndStoreToken = sinon.stub()
 
       it 'it should get a session token from meshblu', ->
-        @sut.getToken @uuid, @password
-        expect(@meshblu.generateAndStoreToken).to.have.been.calledWith uuid: @uuid
+        @sut.getToken 'email@address.com', 'password'
+        expect(@meshblu.generateAndStoreToken).to.have.been.calledWith uuid: 'helicopter'
 
     describe 'when called, checkEmailPassword yields true, and generateAndStoreToken yields "bombastic"', ->
       beforeEach (done) ->
-        @emailPasswordModel.checkEmailPassword.yields null, true
+        @emailPasswordModel.checkEmailPassword.yields null, {uuid: 'choppa'}
         @meshblu.generateAndStoreToken = sinon.stub().yields token: 'bombastic'
-        @sut.getToken @uuid, @password, (@error, @result) => done()
+        @sut.getToken 'scooby@doo.net', 'shouldnt', (@error, @result) => done()
 
       it 'should call the callback with the error', ->
         expect(@result.token).to.equal 'bombastic'

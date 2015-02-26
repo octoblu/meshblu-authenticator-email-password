@@ -1,22 +1,25 @@
 _ = require 'lodash'
 
-class PinModel
+class EmailPasswordModel
   constructor: (uuid, dependencies) ->
     @uuid = uuid;
     @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
-  save: (pin, attributes, callback=->)=>
-    @bcrypt.hash pin, 10, (error, hash)=>
-      return callback(error) if error?
-      device = _.clone attributes
-      device[@uuid] = hash
-      @db.insert device, callback
+  save: (email, password, attributes={}, callback=->)=>
+    device = _.cloneDeep attributes
+    device[@uuid] = {email: email}
+    @db.insert device, (error, savedDevice) =>
+      return callback error if error?
+      @bcrypt.hash password, savedDevice.uuid, (error, hash) =>        
+        return callback error if error?
+        savedDevice.password = hash
+        @db.update savedDevice, callback
 
-  checkPin: (uuid, pin='', callback=->)=>
-    @db.findOne { uuid: uuid }, (error, res)=>
-      return callback(error) if error?
-      @bcrypt.compare pin, res.pin, callback
+  checkEmailPassword: (email, password='', callback=->)=>
+    @db.findOne { '1234.email' : email }, (error, res)=>
+      return callback error if error?
+      @bcrypt.compare password, res.password, callback
 
 
-module.exports = PinModel
+module.exports = EmailPasswordModel
