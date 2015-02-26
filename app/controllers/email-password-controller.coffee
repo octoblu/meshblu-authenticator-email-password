@@ -1,19 +1,19 @@
-PinModel = require '../models/pin-model'
+EmailPasswordModel = require '../models/email-password-model'
 PinAuthenticatorDb = require '../models/pin-authenticator-db'
 _ = require 'lodash'
 
-class PinController
+class EmailPasswordController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
     @meshblu = dependencies?.meshblu
-    @pinModel = dependencies?.pinModel || new PinModel( @uuid, db: new PinAuthenticatorDb( @meshblu ))
+    @emailPasswordModel = dependencies?.emailPasswordModel || new EmailPasswordModel( @uuid, db: new PinAuthenticatorDb( @meshblu ))
 
-  createDevice : (pin, device={}, callback=->) =>
+  createDevice : (email, password, device={}, callback=->) =>
     attributes = _.cloneDeep device
     attributes.configureWhitelist ?= []
     attributes.configureWhitelist.push @uuid
 
-    @pinModel.save pin, attributes, (error, device) =>
+    @emailPasswordModel.save email, password, attributes, (error, device) =>
       if (error)
         return callback error, device?.uuid
 
@@ -21,10 +21,10 @@ class PinController
         callback null, { uuid: device?.uuid, token: result?.token }
 
   getToken : (uuid, pin, callback=->) =>
-    @pinModel.checkPin uuid, pin, (error, result)=>
+    @emailPasswordModel.checkEmailPassword uuid, pin, (error, result)=>
       return callback(error) if error
-      return callback( new Error 'Pin is invalid') if !result
+      return callback( new Error 'Email and password combination is invalid') if !result
       @meshblu.generateAndStoreToken uuid: uuid, (result) =>
         callback null, result
 
-module.exports = PinController
+module.exports = EmailPasswordController

@@ -10,12 +10,12 @@ try
   meshbluJSON  = require './meshblu.json'
 catch
   meshbluJSON =
-    uuid:   process.env.PIN_AUTHENTICATOR_UUID
-    token:  process.env.PIN_AUTHENTICATOR_TOKEN
+    uuid:   process.env.EMAIL_PASSWORD_AUTHENTICATOR_UUID
+    token:  process.env.EMAIL_PASSWORD_AUTHENTICATOR_TOKEN
     server: process.env.MESHBLU_HOST
     port:   process.env.MESHBLU_PORT
 
-port = process.env.PIN_AUTHENTICATOR_PORT ? 3003
+port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 3003
 
 app = express()
 app.use morgan('combined')

@@ -1,14 +1,14 @@
-PinController = require './pin-controller'
+EmailPasswordController = require './email-password-controller'
 
 class SessionController
   constructor: (uuid, meshblu) ->
-    @pinController = new PinController uuid, meshblu: meshblu
+    @emailPasswordController = new EmailPasswordController uuid, meshblu: meshblu
 
   create: (request, response) =>
     uuid = request.params.uuid
-    pin  = request.body.pin
+    {email,password}  = request.body
 
-    @pinController.getToken uuid, pin, (error, device) =>
+    @emailPasswordController.getToken uuid, email, password, (error, device) =>
       return response.status(401).send error.message if error?
       response.status(201).send token: device.token
 

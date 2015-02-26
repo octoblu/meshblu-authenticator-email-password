@@ -1,4 +1,4 @@
-PinModel = require '../../app/models/pin-model'
+PinModel = require '../../app/models/email-password-model'
 
 describe 'PinModel', ->
   beforeEach ->
