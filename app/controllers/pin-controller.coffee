@@ -6,7 +6,7 @@ class PinController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
     @meshblu = dependencies?.meshblu
-    @pinModel = dependencies?.pinModel || new PinModel( db: new PinAuthenticatorDb( @meshblu ))
+    @pinModel = dependencies?.pinModel || new PinModel( @uuid, db: new PinAuthenticatorDb( @meshblu ))
 
   createDevice : (pin, device={}, callback=->) =>
     attributes = _.cloneDeep device

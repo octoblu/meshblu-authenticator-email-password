@@ -1,6 +1,6 @@
 _ = require 'lodash'
-class PinModel
 
+class PinModel
   constructor: (uuid, dependencies) ->
     @uuid = uuid;
     @db = dependencies?.db
