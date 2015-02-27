@@ -13,13 +13,13 @@ class EmailPasswordModel
       return callback error if error?
       @bcrypt.hash password, savedDevice.uuid, (error, hash) =>        
         return callback error if error?
-        savedDevice.password = hash
+        savedDevice[@uuid].password = hash
         @db.update savedDevice, callback
 
   checkEmailPassword: (email, password='', callback=->)=>
-    @db.findOne { '1234.email' : email }, (error, res)=>
+    @db.findOne { "#{@uuid}.email" : email }, (error, device)=>
       return callback error if error?
-      @bcrypt.compare password, res.password, callback
+      @bcrypt.compare password, device[@uuid].password, callback
 
 
 module.exports = EmailPasswordModel

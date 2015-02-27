@@ -1,12 +1,12 @@
 EmailPasswordModel = require '../models/email-password-model'
-PinAuthenticatorDb = require '../models/pin-authenticator-db'
+MeshbluDb = require '../models/meshblu-db'
 _ = require 'lodash'
 
 class EmailPasswordController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
     @meshblu = dependencies?.meshblu
-    @emailPasswordModel = dependencies?.emailPasswordModel || new EmailPasswordModel( @uuid, db: new PinAuthenticatorDb( @meshblu ))
+    @emailPasswordModel = dependencies?.emailPasswordModel || new EmailPasswordModel( @uuid, db: new MeshbluDb( @meshblu ))
 
   createDevice : (email, password, device={}, callback=->) =>
     attributes = _.cloneDeep device

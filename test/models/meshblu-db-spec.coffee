@@ -1,13 +1,13 @@
-PinAuthenticatorDb = require '../../app/models/pin-authenticator-db'
+MeshbluDb = require '../../app/models/meshblu-db'
 
-describe 'PinAuthenticatorDb', ->
+describe 'MeshbluDb', ->
   beforeEach ->
     @meshblu = {}
     @meshblu.register = sinon.stub()
-    @sut = new PinAuthenticatorDb @meshblu
+    @sut = new MeshbluDb @meshblu
 
   describe 'constructor', ->
-    it 'should instantiate a PinAuthenticatorDb', ->
+    it 'should instantiate a MeshbluDb', ->
       expect(@sut).to.exist
 
   describe 'findOne', ->
@@ -84,3 +84,30 @@ describe 'PinAuthenticatorDb', ->
           it 'should call it\'s callback the node way', ->
             @sut.insert @rec3, @callback
             expect(@callback).to.have.been.calledWith null, @device
+
+  describe '->update', ->
+    it 'should exist', ->
+      expect(@sut.update).to.exist
+
+    describe 'when called', ->
+      beforeEach (done) ->
+        @meshblu.update = sinon.stub()
+        @sut.update({ uuid: 'trapped in a blizzard'}, (@error) => done())
+
+      it 'should not yield an error', ->
+        expect(@error).to.not.exist
+
+      it 'should call meshblu.update', ->
+        expect(@meshblu.update).to.have.been.calledWith { uuid: 'trapped in a blizzard' }
+
+    describe 'when called with a different device', ->
+      beforeEach ->
+        @callback = sinon.spy()
+        @meshblu.update = sinon.stub()
+        @sut.update({ uuid: 'trapped in a firestorm'}, @callback)
+
+      it 'should call the callback', ->
+        expect(@callback).to.have.been.called
+
+      it 'should call meshblu.update', ->
+        expect(@meshblu.update).to.have.been.calledWith { uuid: 'trapped in a firestorm' }

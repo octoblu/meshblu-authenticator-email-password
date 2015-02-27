@@ -7,33 +7,11 @@ describe 'EmailPasswordModel', ->
     @dependencies = db: @db, bcrypt: @bcrypt
     @sut = new EmailPasswordModel '1234', @dependencies
 
-  describe 'constructor', ->
-    describe 'when instantiated with a uuid', ->
-      beforeEach ->
-        @sut = new EmailPasswordModel '7f03f82a-e637-45cb-9b79-1b0d53edead4', @dependencies
-      
-      it 'should instantiate a EmailPasswordModel', ->
-        expect(@sut).to.exist
-
-    describe 'when instantiated with a different uuid', ->
-      beforeEach ->
-        @sut = new EmailPasswordModel '01a27f44-0063-4c1a-8fd3-336b2d193c0a', @dependencies
-
-      describe 'when bcrypt.hash succeeds', ->
-        beforeEach ->
-          @callback = sinon.stub()
-          @bcrypt.hash = sinon.stub().yields null, "But didn't it feel so right?"
-          @db.insert = sinon.stub()
-
-        it 'should call db.insert with an object that has UUID and hash and also the callback', ->
-          @sut.save 'Things go wrong', {}, @callback
-          expect(@db.insert).to.have.been.calledWith { '01a27f44-0063-4c1a-8fd3-336b2d193c0a': "But didn't it feel so right?" }, @callback
-
   describe '->checkEmailPassword', ->
     it 'should exist', ->
       expect(@sut.checkEmailPassword).to.exist
 
-    describe 'when called with a uuid and pin', ->
+    describe 'when called with a email and password', ->
       beforeEach ->
         @db.findOne = sinon.stub()
         @sut.checkEmailPassword 'moheeb@hmm.info', 'infosec'
@@ -41,50 +19,68 @@ describe 'EmailPasswordModel', ->
       it 'should call db.findOne with that token', ->
         expect(@db.findOne).to.have.been.calledWith '1234.email': 'moheeb@hmm.info'
 
+    describe 'when sut is called with a different uuid', ->
+      beforeEach ->
+        @db.findOne = sinon.stub()
+        @sut = new EmailPasswordModel '4321', @dependencies
+        @sut.checkEmailPassword 'moheeb@hmm.info', 'infosec'
+
+      it 'should call findOne with the key 4321.email', ->
+        expect(@db.findOne).to.have.been.calledWith '4321.email': 'moheeb@hmm.info'
+
     describe 'when called and findOne yields an error', ->
       beforeEach ->
-        @db.findOne.yields new Error('DANGER')
+        @db.findOne = sinon.stub().yields new Error('DANGER')
         @callback = sinon.stub()
         @sut.checkEmailPassword 'andrew@cod.gamez', '54321', @callback
 
       it 'should call the callback with an error', ->
         expect(@callback.args[0][0]).to.exist
 
-    describe 'and we can find one', ->
+    describe 'when called and we can find a device', ->
       beforeEach ->        
-        @db.findOne.yields null, '1234.password': @hash
+        @db.findOne = sinon.stub().yields null, '1234' : { password: 'spider bite' }
         @callback = sinon.stub()
         @bcrypt.compare = sinon.stub()
 
-      it 'check if the hash of the pin is good.', ->
-        @sut.checkEmailPassword 'andrew@cod.gamez', '54321', @callback
-        expect(@bcrypt.compare).to.have.been.calledWith '54321', 'green eggs and ham'
+      it 'check if the hash of the password is good.', ->
+        @sut.checkEmailPassword 'andrew@cod.gamez', '54321'
+        expect(@bcrypt.compare).to.have.been.calledWith '54321', 'spider bite'
+
+    describe 'when constructed with a different uuid and called and we can find a device', ->
+      beforeEach ->        
+        @sut = new EmailPasswordModel '1010', @dependencies
+        @db.findOne = sinon.stub().yields null, '1010' : { password: 'spider bite' }
+        @callback = sinon.stub()
+        @bcrypt.compare = sinon.stub()
+
+      it 'check if the hash of the password is good.', ->
+        @sut.checkEmailPassword 'andrew@cod.gamez', '54321'
+        expect(@bcrypt.compare).to.have.been.calledWith '54321', 'spider bite'
 
     describe 'and we can find a different one', ->
       beforeEach ->
-        @pin2 ='Frodo'
-        @hash2 = 'Baggins'
-        @db.findOne.yields null, pin: @hash2
+        @db.findOne = sinon.stub().yields null, '1234' : { password: 'tied up' }
         @callback = sinon.stub()
         @bcrypt.compare = sinon.stub()
 
-      it 'check if the hash of that pin is good.', ->
-        @sut.checkEmailPassword @uuid, @pin2, @callback
-        expect(@bcrypt.compare).to.have.been.calledWith @pin2, @hash2
+      it 'check if the hash of that password is good.', ->
+        @sut.checkEmailPassword '1234', 'toaster', @callback
+        expect(@bcrypt.compare).to.have.been.calledWith 'toaster', 'tied up'
 
       describe 'and bcrypt.compare yields an error', ->
         beforeEach ->
           @bcrypt.compare.yields true
 
         it 'should call the callback with an error', ->
-           @sut.checkEmailPassword @uuid, @pin2, @callback
+           @sut.checkEmailPassword @uuid, @password2, @callback
            expect(@callback.args[0][0]).to.exist
 
       it 'should call db.findOne with some other token', ->
         @sut.checkEmailPassword 'ben@positions.biz', 'switched'
         expect(@db.findOne).to.have.been.calledWith '1234.email': 'ben@positions.biz'
 
-  describe.only '->save', ->
+  describe '->save', ->
     it 'should exist', ->
       expect(@sut.save).to.exist
 
@@ -164,12 +160,12 @@ describe 'EmailPasswordModel', ->
 
     describe 'when called and bcrypt yields a hash', ->
       beforeEach -> 
-        @db.insert = sinon.stub().yields null, { uuid: 'KopKilla69' }
+        @db.insert = sinon.stub().yields null, { uuid: 'KopKilla69', '1234' : { email: 'exhausted@gassed.org' } }
         @db.update = sinon.spy()
         @bcrypt.hash = sinon.stub().yields null, 'used'
         @sut.save 'exhausted@gassed.org', 'Actresses Excuse'
         
-      it 'should call bcrypt.hash with the password and the uuid as a salt', ->        
+      it 'should call db.update', ->        
         expect(@db.update).to.have.been.calledWith 
           uuid: 'KopKilla69'
           '1234' : { 
@@ -179,13 +175,13 @@ describe 'EmailPasswordModel', ->
 
     describe 'when called and bcrypt yields a different hash', ->
       beforeEach -> 
-        @db.insert = sinon.stub().yields null, { uuid: 'executive-order' }
+        @db.insert = sinon.stub().yields null, { uuid: 'executive-order', '1234' : { email: 'something@witty' } }
         @db.update = sinon.spy()
         @bcrypt.hash = sinon.stub().yields null, 'predator drone'
         @sut.save 'something@witty', 'do you hear'
         
       it 'should call bcrypt.hash with the password and the uuid as a salt', ->
-        expect(@db.update).to.have.been.calledWith '1234' : { email: 'something@witty', password: 'predator drone' }
+        expect(@db.update).to.have.been.calledWith uuid: 'executive-order', '1234' : { email: 'something@witty', password: 'predator drone' }
 
     describe 'when called and bcrypt yields an error', ->
       beforeEach -> 
@@ -202,7 +198,7 @@ describe 'EmailPasswordModel', ->
       beforeEach -> 
         @device = uuid: 'Speedboat'                  
         @callback = sinon.spy()
-        @db.insert = sinon.stub().yields null, { uuid: 'Speedboat' }
+        @db.insert = sinon.stub().yields null, { uuid: 'Speedboat', '1234' : { email: 'daring@rescue.org' } }
         @db.update = sinon.stub().yields null, @device
         @bcrypt.hash = sinon.stub().yields null, 'whaaaat?'
         @sut.save 'daring@rescue.org', 'Not successful', {}, @callback
