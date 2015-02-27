@@ -82,6 +82,9 @@ describe 'EmailPasswordModel', ->
         expect(@db.find).to.have.been.calledWith '1234.email': 'ben@positions.biz'
 
   describe '->save', ->
+    beforeEach ->
+      @db.findOne = sinon.stub().yields message: 'Device does not exist'
+
     it 'should exist', ->
       expect(@sut.save).to.exist
 
@@ -124,8 +127,8 @@ describe 'EmailPasswordModel', ->
         @bcrypt.hash = sinon.spy()
         @sut.save 'ben@ring.com', 'password'
 
-      it 'should call bcrypt.hash with the password and the uuid as a salt', ->
-        expect(@bcrypt.hash).to.have.been.calledWith 'password', '101010'
+      it 'should call bcrypt.hash with the password and the 10 as a salt', ->
+        expect(@bcrypt.hash).to.have.been.calledWith 'password', 10
 
     describe 'when called and db.insert yields an error', ->
       beforeEach -> 
@@ -138,14 +141,28 @@ describe 'EmailPasswordModel', ->
       it 'should call the callback with an error', ->              
         expect(@callback).to.have.been.calledWith @error
 
-    describe 'when called and insert yields a different device', ->
-      beforeEach -> 
-        @db.insert = sinon.stub().yields null, { uuid: '767676' }
-        @bcrypt.hash = sinon.spy()
-        @sut.save 'poison@toxic.org', 'hair band'
+    describe 'when called and email already exists', ->
+      beforeEach (done) -> 
+        @db.findOne = sinon.stub().yields null, {uuid: 'karate-monkey'}
+        @sut.save 'poison@toxic.org', 'hair band', {}, (@error, @device) => done()
         
-      it 'should call bcrypt.hash with the password and the uuid as a salt', ->
-        expect(@bcrypt.hash).to.have.been.calledWith 'hair band', '767676'
+      it 'should call db.findOne with the email', ->
+        expect(@db.findOne).to.have.been.calledWith '1234.email': 'poison@toxic.org'
+
+      it 'should yield an error', ->
+        expect(@error).to.exist
+
+    describe 'when called with a different email', ->
+      beforeEach (done) -> 
+        @sut = new EmailPasswordModel '4321', @dependencies
+        @db.findOne = sinon.stub().yields null, {uuid: 'karate-monkey'}
+        @sut.save 'heart@captainplanet.org', 'hair band', {}, (@error, @device) => done()
+        
+      it 'should call db.findOne with the email', ->
+        expect(@db.findOne).to.have.been.calledWith '4321.email': 'heart@captainplanet.org'
+
+      it 'should yield an error', ->
+        expect(@error).to.exist
 
     describe 'when called and insert yields an error', ->
       beforeEach ->

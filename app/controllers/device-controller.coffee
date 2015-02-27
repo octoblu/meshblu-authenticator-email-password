@@ -11,11 +11,14 @@ class DeviceController
     _.first request.headers['x-forwarded-for'].split(',')
 
   create: (request, response) =>
+    debug "Got request: #{JSON.stringify(request.body)}"
     {device, email, password} = request.body
+
     device ?= {}
     device.ipAddress ?= @ipAddress(request)
     @emailPasswordController.createDevice email, password, device, (error, device) =>
-      return response.status(500).send error.message if error?
-      response.status(201).send device
+      debug error, device
+      return response.status(500).json error.message if error?
+      response.json device
 
 module.exports = DeviceController

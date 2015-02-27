@@ -1,4 +1,5 @@
 _ = require 'lodash'
+debug = require('debug')('meshblu-email-password:model')
 
 class EmailPasswordModel
   constructor: (uuid, dependencies) ->
@@ -9,17 +10,21 @@ class EmailPasswordModel
   save: (email, password, attributes={}, callback=->)=>
     device = _.cloneDeep attributes
     device[@uuid] = {email: email}
-    @db.insert device, (error, savedDevice) =>
-      return callback error if error?
-      @bcrypt.hash password, savedDevice.uuid, (error, hash) =>        
+    @db.findOne "#{@uuid}.email": email, (error, foundDevice) =>
+      return callback new Error('device already exists') if foundDevice?
+
+      @db.insert device, (error, savedDevice) =>
         return callback error if error?
-        savedDevice[@uuid].password = hash
-        @db.update savedDevice, callback
+        @bcrypt.hash password, 10, (error, hash) =>        
+          return callback error if error?
+          savedDevice[@uuid].password = hash
+          @db.update savedDevice, callback
 
   checkEmailPassword: (email, password='', callback=->)=>
+    debug "Searching for #{@uuid}.email : #{email}"
     @db.find { "#{@uuid}.email" : email }, (error, devices=[])=>
       return callback error if error?      
-      device = _.any devices, (device)=>        
+      device = _.find devices, (device) =>
         @bcrypt.compareSync password, device[@uuid].password      
       callback null, device
 

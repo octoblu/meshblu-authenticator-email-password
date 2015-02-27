@@ -8,7 +8,7 @@ class Routes
 
   register: =>
     @app.get  '/', (request, response) => response.status(200).send status: 'online'
-    @app.post '/devices',                @deviceController.create
-    @app.post '/devices/:uuid/sessions', @sessionController.create
+    @app.post '/devices', @deviceController.create
+    @app.post '/sessions', @sessionController.create
 
 module.exports = Routes

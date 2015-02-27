@@ -1,6 +1,7 @@
 EmailPasswordModel = require '../models/email-password-model'
 MeshbluDb = require 'meshblu-db'
 _ = require 'lodash'
+debug = require('debug')('meshblu-email-password-authenticator:password-controller')
 
 class EmailPasswordController
   constructor : (uuid, dependencies) ->
@@ -23,6 +24,7 @@ class EmailPasswordController
     @emailPasswordModel.checkEmailPassword email, password, (error, device)=>
       return callback(error) if error
       return callback( new Error 'Email and password combination is invalid') unless device?
+      debug "checkEmailPassword returned #{JSON.stringify(device)}"
       @meshblu.generateAndStoreToken uuid: device.uuid, (result) =>
         callback null, result
 
