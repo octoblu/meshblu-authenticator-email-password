@@ -91,10 +91,10 @@ describe 'EmailPasswordModel', ->
     describe 'when called with an email', ->
       beforeEach ->
         @db.insert = sinon.stub()
-        @sut.save 'petedemartini@what?.com'
+        @sut.save 'petedemartini@what.com'
 
       it 'should call db.insert with the email', ->
-        expect(@db.insert).to.have.been.calledWith '1234': email: 'petedemartini@what?.com'
+        expect(@db.insert).to.have.been.calledWith '1234': email: 'petedemartini@what.com'
 
     describe 'when called with a different email', ->
       beforeEach ->
@@ -193,13 +193,13 @@ describe 'EmailPasswordModel', ->
 
     describe 'when called and bcrypt yields a different hash', ->
       beforeEach -> 
-        @db.insert = sinon.stub().yields null, { uuid: 'executive-order', '1234' : { email: 'something@witty' } }
+        @db.insert = sinon.stub().yields null, { uuid: 'executive-order', '1234' : { email: 'something@witty.com' } }
         @db.update = sinon.spy()
         @bcrypt.hash = sinon.stub().yields null, 'predator drone'
-        @sut.save 'something@witty', 'do you hear'
+        @sut.save 'something@witty.com', 'do you hear'
         
       it 'should call bcrypt.hash with the password and the uuid as a salt', ->
-        expect(@db.update).to.have.been.calledWith uuid: 'executive-order', '1234' : { email: 'something@witty', password: 'predator drone' }
+        expect(@db.update).to.have.been.calledWith uuid: 'executive-order', '1234' : { email: 'something@witty.com', password: 'predator drone' }
 
     describe 'when called and bcrypt yields an error', ->
       beforeEach -> 
@@ -223,4 +223,18 @@ describe 'EmailPasswordModel', ->
         
       it 'should call the callback with the device', ->
         expect(@callback).to.have.been.calledWith null, @device
+    
+    describe 'when an invalid email is passed in', ->
+      beforeEach (done) ->
+        @sut.save '', '', {}, (@error) => done()
+
+      it 'should return an error', ->
+        expect(@error).to.exist
+
+    describe 'when an invalid email is passed in', ->
+      beforeEach (done) ->
+        @sut.save 'asdf@asdf', '', {}, (@error) => done()
+
+      it 'should return an invalid email error', ->
+        expect(@error.message).to.equal('invalid email')
 

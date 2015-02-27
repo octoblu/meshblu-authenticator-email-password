@@ -1,5 +1,6 @@
 _ = require 'lodash'
 debug = require('debug')('meshblu-email-password:model')
+validator = require 'validator'
 
 class EmailPasswordModel
   constructor: (uuid, dependencies) ->
@@ -8,6 +9,8 @@ class EmailPasswordModel
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
   save: (email, password, attributes={}, callback=->)=>
+    return callback new Error ('invalid email') unless validator.isEmail(email)
+
     device = _.cloneDeep attributes
     device[@uuid] = {email: email}
     @db.findOne "#{@uuid}.email": email, (error, foundDevice) =>
