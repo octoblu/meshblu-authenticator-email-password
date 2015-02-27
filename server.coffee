@@ -25,12 +25,12 @@ app.use bodyParser.urlencoded(extended: true)
 app.use cors()
 
 conn = meshblu.createConnection meshbluJSON
-conn.on 'ready', ->
-  routes = new Routes app, meshbluJSON.uuid, conn
-  routes.register()
 
-  app.listen port, =>
-    console.log "listening at localhost:#{port}"
+routes = new Routes app, meshbluJSON.uuid, conn
+routes.register()
+
+app.listen port, =>
+  console.log "listening at localhost:#{port}"
 
 conn.on 'notReady', ->
   console.error "Unable to establish a connection to meshblu"
