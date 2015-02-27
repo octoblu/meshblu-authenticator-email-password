@@ -17,9 +17,11 @@ class EmailPasswordModel
         @db.update savedDevice, callback
 
   checkEmailPassword: (email, password='', callback=->)=>
-    @db.findOne { "#{@uuid}.email" : email }, (error, device)=>
-      return callback error if error?
-      @bcrypt.compare password, device[@uuid].password, callback
+    @db.find { "#{@uuid}.email" : email }, (error, devices=[])=>
+      return callback error if error?      
+      device = _.any devices, (device)=>        
+        @bcrypt.compareSync password, device[@uuid].password      
+      callback null, device
 
 
 module.exports = EmailPasswordModel

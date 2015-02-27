@@ -1,5 +1,5 @@
 EmailPasswordModel = require '../models/email-password-model'
-MeshbluDb = require '../models/meshblu-db'
+MeshbluDb = require 'meshblu-db'
 _ = require 'lodash'
 
 class EmailPasswordController
@@ -14,8 +14,7 @@ class EmailPasswordController
     attributes.configureWhitelist.push @uuid
 
     @emailPasswordModel.save email, password, attributes, (error, device) =>
-      if (error)
-        return callback error, device?.uuid
+      return callback error, device?.uuid if error?
 
       @meshblu.generateAndStoreToken uuid: device?.uuid, (result) =>
         callback null, { uuid: device?.uuid, token: result?.token }

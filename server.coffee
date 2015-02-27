@@ -18,7 +18,7 @@ catch
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 3003
 
 app = express()
-app.use morgan('combined')
+app.use morgan('dev')
 app.use errorHandler()
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
