@@ -14,7 +14,6 @@ catch
     token:  process.env.EMAIL_PASSWORD_AUTHENTICATOR_TOKEN
     server: process.env.MESHBLU_HOST
     port:   process.env.MESHBLU_PORT
-    privateKey : process.env.EMAIL_PASSWORD_AUTHENTICATOR_PRIVATE_KEY
 
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 3003
 
@@ -26,6 +25,11 @@ app.use bodyParser.urlencoded(extended: true)
 app.use cors()
 
 conn = meshblu.createConnection meshbluJSON
+
+conn.on 'ready', ->
+  conn.whoami {}, (device) ->
+    conn.setPrivateKey(device.privateKey) unless conn.privateKey
+
 
 routes = new Routes app, meshbluJSON.uuid, conn
 routes.register()
