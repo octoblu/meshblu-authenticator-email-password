@@ -7,6 +7,7 @@ class EmailPasswordModel
     @uuid = uuid;
     @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
+    @meshblu = dependencies?.meshblu
 
   save: (email, password, attributes={}, callback=->)=>
     return callback new Error ('invalid email') unless validator.isEmail(email)
@@ -18,17 +19,20 @@ class EmailPasswordModel
 
       @db.insert device, (error, savedDevice) =>
         return callback error if error?
-        @bcrypt.hash password, 10, (error, hash) =>        
+        @bcrypt.hash password, 10, (error, hash) =>
           return callback error if error?
           savedDevice[@uuid].password = hash
+          savedDevice[@uuid].signature = @meshblu.sign savedDevice[@uuid]
           @db.update savedDevice, callback
 
   checkEmailPassword: (email, password='', callback=->)=>
     debug "Searching for #{@uuid}.email : #{email}"
     @db.find { "#{@uuid}.email" : email }, (error, devices=[])=>
-      return callback error if error?      
+      return callback error if error?
       device = _.find devices, (device) =>
-        @bcrypt.compareSync password, device[@uuid].password      
+        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid].signature) &&
+        @bcrypt.compareSync(password, device[@uuid].password)
+
       callback null, device
 
 

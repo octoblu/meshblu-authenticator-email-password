@@ -14,6 +14,7 @@ catch
     token:  process.env.EMAIL_PASSWORD_AUTHENTICATOR_TOKEN
     server: process.env.MESHBLU_HOST
     port:   process.env.MESHBLU_PORT
+    privateKey : process.env.EMAIL_PASSWORD_AUTHENTICATOR_PRIVATE_KEY
 
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 3003
 
