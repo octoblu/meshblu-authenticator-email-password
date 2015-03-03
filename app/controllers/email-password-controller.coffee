@@ -7,7 +7,7 @@ class EmailPasswordController
   constructor : (uuid, dependencies) ->
     @uuid = uuid
     @meshblu = dependencies?.meshblu
-    @emailPasswordModel = dependencies?.emailPasswordModel || new EmailPasswordModel( @uuid, db: new MeshbluDb( @meshblu ))
+    @emailPasswordModel = dependencies?.emailPasswordModel || new EmailPasswordModel( @uuid, db: new MeshbluDb( @meshblu ), meshblu: @meshblu)
 
   createDevice : (email, password, device={}, callback=->) =>
     attributes = _.cloneDeep device
