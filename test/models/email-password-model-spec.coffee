@@ -40,25 +40,25 @@ describe 'EmailPasswordModel', ->
 
     describe 'when called and we can find a device', ->
       beforeEach ->
-        @db.find = sinon.stub().yields null, ['1234' : { password: 'spider bite' }]
+        @db.find = sinon.stub().yields null, [uuid: '4', '1234' : { password: 'spider bite' }]
         @callback = sinon.stub()
         @bcrypt.compareSync = sinon.stub()
 
       it 'check if the hash of the password is good.', ->
         @sut.checkEmailPassword 'andrew@cod.gamez', '54321'
-        expect(@bcrypt.compareSync).to.have.been.calledWith '54321', 'spider bite'
+        expect(@bcrypt.compareSync).to.have.been.calledWith '543214', 'spider bite'
 
     describe 'when called and we can find a device', ->
       beforeEach ->
         @db.find = sinon.stub().yields null, [
-          {'1234' : { email: 'aaron@herres.com', password: 'spider bite', signature: '1' }}
-          {'1234' : { email: 'michael@alexander.com', password: 'extensive problems', signature: '2' }}
+          { uuid: '1', '1234' : { email: 'aaron@herres.com', password: 'spider bite', signature: '1' }}
+          { uuid: '2', '1234' : { email: 'michael@alexander.com', password: 'extensive problems', signature: '2' }}
         ]
         @bcrypt.compareSync = sinon.stub().returns false
 
       it 'should check if the hash of the password is good.', ->
         @sut.checkEmailPassword 'andrew@cod.gamez', '54321'
-        expect(@bcrypt.compareSync).to.have.been.calledWith '54321', 'spider bite'
+        expect(@bcrypt.compareSync).to.have.been.calledWith '543211', 'spider bite'
 
       it 'should check if the signature of the data is good', ->
         @sut.checkEmailPassword 'aaron@herres.com', '54321'
@@ -87,23 +87,23 @@ describe 'EmailPasswordModel', ->
     describe 'when constructed with a different uuid and called and we can find a device', ->
       beforeEach ->
         @sut = new EmailPasswordModel '1010', @dependencies
-        @db.find = sinon.stub().yields null, ['1010' : { password: 'spider bite' }]
+        @db.find = sinon.stub().yields null, [uuid: '3', '1010' : { password: 'spider bite' }]
         @callback = sinon.stub()
         @bcrypt.compareSync = sinon.stub().returns true
 
       it 'check if the hash of the password is good.', ->
         @sut.checkEmailPassword 'andrew@cod.gamez', '54321'
-        expect(@bcrypt.compareSync).to.have.been.calledWith '54321', 'spider bite'
+        expect(@bcrypt.compareSync).to.have.been.calledWith '543213', 'spider bite'
 
     describe 'and we can find a different one', ->
       beforeEach ->
-        @db.find = sinon.stub().yields null, ['1234' : { password: 'tied up' }]
+        @db.find = sinon.stub().yields null, [ uuid: '1', '1234' : { password: 'tied up' }]
         @callback = sinon.stub()
         @bcrypt.compareSync = sinon.stub()
 
       it 'check if the hash of that password is good.', ->
         @sut.checkEmailPassword '1234', 'toaster', @callback
-        expect(@bcrypt.compareSync).to.have.been.calledWith 'toaster', 'tied up'
+        expect(@bcrypt.compareSync).to.have.been.calledWith 'toaster1', 'tied up'
 
       it 'should call db.findOne with some other token', ->
         @sut.checkEmailPassword 'ben@positions.biz', 'switched'
@@ -156,7 +156,16 @@ describe 'EmailPasswordModel', ->
         @sut.save 'ben@ring.com', 'password'
 
       it 'should call bcrypt.hash with the password and the 10 as a salt', ->
-        expect(@bcrypt.hash).to.have.been.calledWith 'password', 10
+        expect(@bcrypt.hash).to.have.been.calledWith 'password101010', 10
+
+    describe 'when called and insert yields a device', ->
+      beforeEach ->
+        @db.insert = sinon.stub().yields null, { uuid: '202020' }
+        @bcrypt.hash = sinon.spy()
+        @sut.save 'ben@ring.com', 'whatevs'
+
+      it 'should call bcrypt.hash with the password and the 10 as a salt', ->
+        expect(@bcrypt.hash).to.have.been.calledWith 'whatevs202020', 10
 
     describe 'when called and db.insert yields an error', ->
       beforeEach ->

@@ -19,7 +19,7 @@ class EmailPasswordModel
 
       @db.insert device, (error, savedDevice) =>
         return callback error if error?
-        @bcrypt.hash password, 10, (error, hash) =>
+        @bcrypt.hash password + savedDevice.uuid, 10, (error, hash) =>
           return callback error if error?
           savedDevice[@uuid].password = hash
           savedDevice[@uuid].signature = @meshblu.sign savedDevice[@uuid]
@@ -30,8 +30,8 @@ class EmailPasswordModel
     @db.find { "#{@uuid}.email" : email }, (error, devices=[])=>
       return callback error if error?
       device = _.find devices, (device) =>
-        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid].signature) &&
-        @bcrypt.compareSync(password, device[@uuid].password)
+        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature) &&
+        @bcrypt.compareSync(password + device.uuid, device[@uuid]?.password)
 
       callback null, device
 
