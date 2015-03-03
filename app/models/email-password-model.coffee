@@ -4,12 +4,12 @@ validator = require 'validator'
 
 class EmailPasswordModel
   constructor: (uuid, dependencies) ->
-    @uuid = uuid;
+    @uuid = uuid
     @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
     @meshblu = dependencies?.meshblu
 
-  save: (email, password, attributes={}, callback=->)=>
+  save: (email, password, attributes={}, callback=->) =>
     return callback new Error ('invalid email') unless validator.isEmail(email)
 
     device = _.cloneDeep attributes
