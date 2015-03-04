@@ -1,13 +1,15 @@
 _ = require 'lodash'
 debug = require('debug')('meshblu-email-password:model')
 validator = require 'validator'
+SecureMeshbluDb = require './secure-meshblu-db'
 
 class EmailPasswordModel
   constructor: (uuid, dependencies) ->
     @uuid = uuid
-    @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
     @meshblu = dependencies?.meshblu
+    @db = dependencies?.db
+    @findSigned = SecureMeshbluDb.findSigned
 
   save: (email, password, attributes={}, callback=->) =>
     return callback new Error ('invalid email') unless validator.isEmail(email)
@@ -27,13 +29,13 @@ class EmailPasswordModel
 
   checkEmailPassword: (email, password='', callback=->)=>
     debug "Searching for #{@uuid}.email : #{email}"
-    @db.find { "#{@uuid}.email" : email }, (error, devices=[])=>
-      return callback error if error?
+    @findSigned { "#{@uuid}.email" : email }, (error, devices) =>
+      return callback(error) if error?
       device = _.find devices, (device) =>
-        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature) &&
         @bcrypt.compareSync(password + device.uuid, device[@uuid]?.password)
 
-      callback null, device
+      return callback(null, device)
+
 
 
 module.exports = EmailPasswordModel

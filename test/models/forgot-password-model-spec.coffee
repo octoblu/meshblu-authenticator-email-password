@@ -2,7 +2,7 @@ ForgotPasswordModel = require '../../app/models/forgot-password-model'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
-    @db = findOne: sinon.stub(), update: sinon.stub()
+    @db = find: sinon.stub(), update: sinon.stub()
     @Mailgun = sinon.spy()
     @Mailgun.prototype.sendText = sinon.spy()
     @uuidGenerator = {
@@ -10,7 +10,7 @@ describe 'ForgotPasswordModel', ->
     }
     @meshblu = {
       sign: sinon.stub()
-      verify: sinon.stub()
+      verify: sinon.stub().returns true
     }
     @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, meshblu: @meshblu
     @sut = new ForgotPasswordModel 'U1', 'mailgun_key', @dependencies
@@ -31,25 +31,25 @@ describe 'ForgotPasswordModel', ->
       beforeEach ->
         @sut.forgot 'a@octoblu.com'
       it 'should query meshbludb to find devices with that email', ->
-        expect(@db.findOne).to.have.been.calledWith 'U1.email' : 'a@octoblu.com'
+        expect(@db.find).to.have.been.calledWith 'U1.email' : 'a@octoblu.com'
 
     describe 'when called with a different email address', ->
      beforeEach ->
         @sut.forgot 'k@octoblu.com'
       it 'should query meshbludb to find devices with that email', ->
-        expect(@db.findOne).to.have.been.calledWith 'U1.email' : 'k@octoblu.com'
+        expect(@db.find).to.have.been.calledWith 'U1.email' : 'k@octoblu.com'
 
     describe 'when sut is instantiated with a different uuid and forgot is called', ->
       beforeEach ->
         @sut = new ForgotPasswordModel 'R2D2', 'mailgun_key', @dependencies
         @sut.forgot 'dan@dan.com'
 
-      it 'should call db.findOne with that new uuid', ->
-        expect(@db.findOne).to.have.been.calledWith 'R2D2.email' : 'dan@dan.com'
+      it 'should call db.find with that new uuid', ->
+        expect(@db.find).to.have.been.calledWith 'R2D2.email' : 'dan@dan.com'
 
     describe "when a device with the email address isn't found", ->
       beforeEach ->
-        @db.findOne.yields(null, null)
+        @db.find.yields(null, [])
         @sut.forgot 'gza@wutang.com', (@error) =>
 
       it 'should yield an error', ->
@@ -57,7 +57,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found', ->
       beforeEach ->
-        @db.findOne.yields null,  uuid: 1, U1: {}
+        @db.find.yields null,  [uuid: 1, U1: {}]
         @sut.mailgun = sendText: sinon.stub()
         @uuidGenerator.v4.returns '1'
 
@@ -74,7 +74,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found with a different UUID', ->
       beforeEach ->
-        @db.findOne.yields null, { U1: {} }
+        @db.find.yields null, [{ U1: {} }]
         @sut.mailgun = sendText: sinon.stub()
         @uuidGenerator.v4.returns 'c'
 
@@ -93,7 +93,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when the device is found and a reset UUID is generated', ->
         beforeEach ->
-          @db.findOne.yields null, { uuid : 'k', U1: { email: 'biofuel@used.com', password: 'pancakes' } }
+          @db.find.yields null, [{ uuid : 'k', U1: { email: 'biofuel@used.com', password: 'pancakes' } }]
           @db.update = sinon.stub()
           @sut.mailgun = sendText: sinon.stub()
           @meshblu.sign.returns 'hello!'
@@ -115,7 +115,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when the device is found and a reset UUID is generated', ->
         beforeEach ->
-          @db.findOne.yields null, { uuid : 'l', U1: { email: 'slow.turning@windmill.com', password: 'waffles' } }
+          @db.find.yields null, [{ uuid : 'l', U1: { email: 'slow.turning@windmill.com', password: 'waffles' } }]
           @db.update = sinon.stub()
           @sut.mailgun = sendText: sinon.stub()
           @meshblu.sign.returns 'axed!'

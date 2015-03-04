@@ -1,16 +1,20 @@
 _ = require 'lodash'
+SecureMeshbluDb = require './secure-meshblu-db'
+
 class ForgotPasswordModel
   constructor : (uuid, mailgunKey, dependencies) ->
     @uuid = uuid;
-    @db = dependencies?.db
     @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
     @meshblu = dependencies?.meshblu
     Mailgun = dependencies?.Mailgun || require('mailgun').Mailgun
     @mailgun = new Mailgun mailgunKey
+    @db = dependencies?.db
+    @findSigned = SecureMeshbluDb.findSigned
 
   forgot :(email, callback=->) =>
-    @db.findOne "#{@uuid}.email" : email, (error, device) =>
-      return callback new Error('Device not found for email address') if error? or !device
+    @findSigned "#{@uuid}.email" : email, (error, devices=[]) =>
+      return callback new Error('Device not found for email address') if error? or !devices.length
+      device = _.first devices
 
       device[@uuid].reset = @uuidGenerator.v4()
       device[@uuid] = @sign device[@uuid]
