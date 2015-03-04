@@ -28,8 +28,10 @@ class ForgotPasswordModel
         'no-reply@octoblu.com'
         email
         'Reset Password'
-        "You recently made a request to reset your password, click <a href=\"https://email-password.octoblu.com/reset/#{device[@uuid].reset}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+        "You recently made a request to reset your password, click <a href=\"https://email-password.octoblu.com/reset/#{device[@uuid].reset}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail",
+        callback
       )
+
 
   sign : (data) =>
     delete data.signature

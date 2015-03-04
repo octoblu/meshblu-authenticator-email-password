@@ -73,12 +73,12 @@ describe 'ForgotPasswordModel', ->
 
 
     describe 'when a device is found with a different UUID', ->
-      beforeEach ->
+      beforeEach (done)->
         @db.find.yields null, [{ U1: {} }]
-        @sut.mailgun = sendText: sinon.stub()
+        @sut.mailgun = sendText: sinon.stub().yields(null, true)
         @uuidGenerator.v4.returns 'c'
 
-        @sut.forgot 'timber@waffle-iron.com'
+        @sut.forgot 'timber@waffle-iron.com', (@error, @response) => done()
 
       it 'should call Mailgun.sendText', ->
         expect(@sut.mailgun.sendText).to.have.been.called
@@ -135,7 +135,19 @@ describe 'ForgotPasswordModel', ->
             }
           )
 
+    describe 'when mailgun.sendtext yields an error', ->
+        beforeEach ->
+          @db.find.yields null, [{ uuid : 'l', U1: { email: 'slow.turning@windmill.com', password: 'waffles' } }]
+          @db.update = sinon.stub()
+          @sut.mailgun = sendText: sinon.stub().yields(new Error('Something terrible happened'))
 
+          @meshblu.sign.returns 'axed!'
+          @uuidGenerator.v4.returns 'd'
+
+          @sut.forgot 'timber@waffle-iron.com', (@error)=>
+
+        it 'should call the callback with the error', ->
+          expect(@error.message).to.equal('Something terrible happened')
 
 
 
