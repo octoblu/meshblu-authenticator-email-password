@@ -16,7 +16,9 @@ class EmailPasswordModel
 
     device = _.cloneDeep attributes
     device[@uuid] = {email: email}
-    @db.findOne "#{@uuid}.email": email, (error, foundDevice) =>
+    query = {}
+    query["#{@uuid}.email"] = email
+    @db.findOne query, (error, foundDevice) =>
       return callback new Error('device already exists') if foundDevice?
 
       @db.insert device, (error, savedDevice) =>
@@ -29,7 +31,9 @@ class EmailPasswordModel
 
   checkEmailPassword: (email, password='', callback=->)=>
     debug "Searching for #{@uuid}.email : #{email}"
-    @findSigned { "#{@uuid}.email" : email }, (error, devices) =>
+    query = {}
+    query["#{@uuid}.email"] = email
+    @findSigned query, (error, devices) =>
       return callback(error) if error?
       device = _.find devices, (device) =>
         @bcrypt.compareSync(password + device.uuid, device[@uuid]?.password)
