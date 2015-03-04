@@ -2,13 +2,17 @@ ForgotPasswordModel = require '../../app/models/forgot-password-model'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
-    @db = findOne: sinon.stub()
+    @db = findOne: sinon.stub(), update: sinon.stub()
     @Mailgun = sinon.spy()
     @Mailgun.prototype.sendText = sinon.spy()
     @uuidGenerator = {
       v4: sinon.stub()
     }
-    @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator
+    @meshblu = {
+      sign: sinon.stub()
+      verify: sinon.stub()
+    }
+    @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, meshblu: @meshblu
     @sut = new ForgotPasswordModel 'U1', 'mailgun_key', @dependencies
 
   describe 'constructor', ->
@@ -53,7 +57,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found', ->
       beforeEach ->
-        @db.findOne.yields null,  uuid: 1
+        @db.findOne.yields null,  uuid: 1, U1: {}
         @sut.mailgun = sendText: sinon.stub()
         @uuidGenerator.v4.returns '1'
 
@@ -70,7 +74,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found with a different UUID', ->
       beforeEach ->
-        @db.findOne.yields null, {}
+        @db.findOne.yields null, { U1: {} }
         @sut.mailgun = sendText: sinon.stub()
         @uuidGenerator.v4.returns 'c'
 
@@ -86,6 +90,51 @@ describe 'ForgotPasswordModel', ->
           'Reset Password'
           'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset/c">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
         )
+
+    describe 'when the device is found and a reset UUID is generated', ->
+        beforeEach ->
+          @db.findOne.yields null, { uuid : 'k', U1: { email: 'biofuel@used.com', password: 'pancakes' } }
+          @db.update = sinon.stub()
+          @sut.mailgun = sendText: sinon.stub()
+          @meshblu.sign.returns 'hello!'
+          @uuidGenerator.v4.returns 'c'
+
+          @sut.forgot 'timber@waffle-iron.com'
+
+        it 'should update the device record with the reset UUID', ->
+          expect(@db.update).to.have.been.calledWith(
+            {uuid : 'k'}
+            {
+              U1:
+                email: 'biofuel@used.com'
+                password: 'pancakes'
+                reset: 'c'
+                signature: 'hello!'
+            }
+          )
+
+    describe 'when the device is found and a reset UUID is generated', ->
+        beforeEach ->
+          @db.findOne.yields null, { uuid : 'l', U1: { email: 'slow.turning@windmill.com', password: 'waffles' } }
+          @db.update = sinon.stub()
+          @sut.mailgun = sendText: sinon.stub()
+          @meshblu.sign.returns 'axed!'
+          @uuidGenerator.v4.returns 'd'
+
+          @sut.forgot 'timber@waffle-iron.com'
+
+        it 'should update the device record with the reset UUID', ->
+          expect(@db.update).to.have.been.calledWith(
+            {uuid : 'l'}
+            {
+              U1:
+                email: 'slow.turning@windmill.com'
+                password: 'waffles'
+                reset: 'd'
+                signature: 'axed!'
+            }
+          )
+
 
 
 
