@@ -20,17 +20,13 @@ class DeviceController
     device =
       type: 'octoblu:user'
 
-    deviceCreateCallback = (error, createdDevice) =>
-      debug 'device create error', error if error?
-      debug 'device created', createdDevice
-      if error?
-        return response.status(500).send(error)
-      unless createdDevice?
-        return response.status(401).send(new Error "Unable to validate user" )
-
-      return response.status(201).json createdDevice
-
     debug 'device query', query
-    deviceModel.create query, device, email, password, deviceCreateCallback
+    deviceModel.create query, device, email, password, (error, createdDevice) =>
+      if error?
+        if error.message == DeviceAuthenticator.ERROR_DEVICE_ALREADY_EXISTS 
+          return response.status(401).json error: "Unable to create user"
+        return response.status(500).send(error)
+
+      response.status(201).json createdDevice
 
 module.exports = DeviceController

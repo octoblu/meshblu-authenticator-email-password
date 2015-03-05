@@ -15,7 +15,7 @@
     "lodash": "^3.3.1",
     "mailgun": "^0.5.0",
     "meshblu": "^1.18.0",
-    "meshblu-authenticator-core": "^1.2.0",
+    "meshblu-authenticator-core": "^1.2.2",
     "meshblu-db": "^1.0.0",
     "morgan": "^1.5.1",
     "node-uuid": "^1.4.2",
