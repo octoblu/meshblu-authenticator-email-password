@@ -17,10 +17,10 @@ class DeviceController
     deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     query[@authenticatorUuid + '.id'] = email
-    device = 
+    device =
       type: 'octoblu:user'
 
-    deviceCreateCallback = (error, createdDevice) => 
+    deviceCreateCallback = (error, createdDevice) =>
       debug 'device create error', error if error?
       debug 'device created', createdDevice
       if error?
@@ -28,8 +28,8 @@ class DeviceController
       unless createdDevice?
         return response.status(401).send(new Error "Unable to validate user" )
 
-      return response.json createdDevice
-    
+      return response.status(201).json createdDevice
+
     debug 'device query', query
     deviceModel.create query, device, email, password, deviceCreateCallback
 
