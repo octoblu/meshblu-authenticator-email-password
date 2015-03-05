@@ -15,10 +15,11 @@ class ForgotPasswordModel
       return callback new Error('Device not found for email address') if error? or !device?
 
       resetToken = @uuidGenerator.v4()
-      device[@uuid] = @sign device[@uuid]
 
       @bcrypt.hash resetToken + device.uuid, 10, (hash)=>
         device[@uuid].reset = hash
+        device[@uuid] = @sign device[@uuid]
+
         @db.update(
           {uuid : device.uuid}
           _.pick(device, @uuid)
@@ -32,10 +33,11 @@ class ForgotPasswordModel
           callback
         )
 
-  reset : (uuid, token, password, callback=->) => 
+  reset : (uuid, token, password, callback=->) =>
     @findSigned uuid: uuid, (error, device) =>
       return callback new Error('Device not found') if error? or !device?
       return callback new Error('Invalid Token') unless @bcrypt.compareSync(token + uuid, device[@uuid].reset)
+
       @bcrypt.hash password + uuid, 10, (hash) =>
         delete device[@uuid].reset
         device[@uuid].secret = hash
@@ -53,7 +55,7 @@ class ForgotPasswordModel
           @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
 
       callback null, device
-        
+
 
   sign : (data) =>
     data = _.cloneDeep data
