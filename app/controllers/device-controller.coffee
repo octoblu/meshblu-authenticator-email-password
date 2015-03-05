@@ -1,24 +1,33 @@
-EmailPasswordController = require './email-password-controller'
-debug = require('debug')('meshblu-email-password-authenticator:device-controller')
+{DeviceAuthenticator} = require 'meshblu-authenticator-core'
+MeshbluDB = require 'meshblu-db'
+debug = require 'debug' 'meshblu-email-password-authenticator:device-controller'
 _ = require 'lodash'
 
 class DeviceController
-  constructor: (uuid, meshblu) ->
-    @emailPasswordController = new EmailPasswordController uuid, meshblu: meshblu
-
-  ipAddress: (request) =>
-    return request.connection.remoteAddress unless request.headers['x-forwarded-for']?
-    _.first request.headers['x-forwarded-for'].split(',')
+  constructor: (meshbluJSON, @meshblu) ->
+    @authenticatorUuid = meshbluJSON.uuid
+    @authenticatorName = meshbluJSON.name
+    @meshbludb = new MeshbluDB @meshblu
 
   create: (request, response) =>
-    debug "Got request: #{JSON.stringify(request.body)}"
-    {device, email, password} = request.body
+    {email,password} = request.body
+    deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
+    query = {}
+    query[@authenticatorUuid + '.id'] = email
+    device = 
+      type: 'octoblu:user'
 
-    device ?= {}
-    device.ipAddress ?= @ipAddress(request)
-    @emailPasswordController.createDevice email, password, device, (error, device) =>
-      debug error, device
-      return response.status(500).json error.message if error?
-      response.json device
+    deviceCreateCallback = (error, createdDevice) => 
+      debug 'device create error', error if error?
+      debug 'device created', createdDevice
+      if error?
+        return response.status(500).send(error)
+      unless createdDevice?
+        return response.status(401).send(new Error "Unable to validate user" )
+
+      return response.json createdDevice
+    
+    debug 'device query', query
+    deviceModel.create query, device, email, password, deviceCreateCallback
 
 module.exports = DeviceController
