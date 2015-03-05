@@ -28,16 +28,18 @@ describe 'ForgotPasswordModel', ->
     it 'should have a function called forgot', ->
       expect(@sut.forgot).to.exist
 
-  describe 'forgot', ->
+  describe '->forgot', ->
     describe 'when called with a@octoblu.com', ->
       beforeEach ->
         @sut.forgot 'a@octoblu.com'
+
       it 'should query meshbludb to find devices with that email', ->
         expect(@db.find).to.have.been.calledWith 'U1.email' : 'a@octoblu.com'
 
     describe 'when called with a different email address', ->
      beforeEach ->
         @sut.forgot 'k@octoblu.com'
+
       it 'should query meshbludb to find devices with that email', ->
         expect(@db.find).to.have.been.calledWith 'U1.email' : 'k@octoblu.com'
 
@@ -168,7 +170,7 @@ describe 'ForgotPasswordModel', ->
       it 'should call the callback with the error', ->
         expect(@error.message).to.equal('Something terrible happened')
 
-  describe 'reset', ->
+  describe '->reset', ->
     it 'should exist', ->
       expect(@sut.reset).to.exist
 
@@ -191,7 +193,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when findSigned yields some devices whose hashes don\'t match', ->
       beforeEach ->
-        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Tuck', U1: reset: 'Piglet'} ]
+        @sut.findSigned = sinon.stub().yields null, {uuid: 'Tuck', U1: reset: 'Piglet'}
         @sut.reset 'Tuck', 'Friar', 'password', (@error) =>
 
       it 'should call the callback with an error', ->
@@ -202,7 +204,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when findSigned yields some other devices whose hashes don\'t match', ->
       beforeEach ->
-        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Drew', U1: reset: 'Detective'} ]
+        @sut.findSigned = sinon.stub().yields null, {uuid: 'Drew', U1: reset: 'Detective'}
         @sut.reset 'Drew', 'Nancy'
 
       it 'should call brypt.compareSync with the uuid and token', ->
@@ -211,7 +213,7 @@ describe 'ForgotPasswordModel', ->
     describe 'when sut is constructed with a different uuid and reset is called', ->
       beforeEach ->
         @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
-        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Hood', Lifehouse: reset: 'LilJon'} ]
+        @sut.findSigned = sinon.stub().yields null, {uuid: 'Hood', Lifehouse: reset: 'LilJon'}
         @sut.reset 'Hood', 'Robin'
 
        it 'should call brypt.compareSync with the uuid and token', ->
@@ -220,16 +222,15 @@ describe 'ForgotPasswordModel', ->
     describe 'when no devices are returned', ->
       beforeEach ->
         @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
-        @sut.findSigned = sinon.stub().yields null, [ ]
+        @sut.findSigned = sinon.stub().yields null, null
         @sut.reset 'Hood', 'Robin', 'password', (@error) =>
-
 
        it 'should call the callback with an error', ->
         expect(@error).to.exist
 
     describe 'when the token is verified', ->
       beforeEach ->
-        @sut.findSigned = sinon.stub().yields(null, [ {uuid: 'Bunyan', U1: reset: 'Ox'} ])        
+        @sut.findSigned = sinon.stub().yields null, {uuid: 'Bunyan', U1: reset: 'Ox'}
         @bcrypt.compareSync = sinon.stub().returns true
         @sut.reset 'Bunyan', 'Paul', 'knock-knock'
 
@@ -238,29 +239,36 @@ describe 'ForgotPasswordModel', ->
           
     describe 'when the token is verified', ->
       beforeEach ->
-        @device = [ {uuid: 'Typhoid', U1: reset: 'Chef'} ]
-        @updateDevice = { U1 : { password: 'islandLife', signature: 'veryTasty', reset: null }}
-        @sut.findSigned = sinon.stub().yields(null, @device)
+        @device = uuid: 'Typhoid', U1: reset: 'Chef'
+        @sut.findSigned = sinon.stub().yields null, @device
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields 'islandLife'
         @meshblu.sign = sinon.stub().returns 'veryTasty'
         @sut.reset 'Typhoid', 'Mary', 'soupy'
 
       it 'should hash the new password with the uuid of the authenticator', ->
-          expect(@bcrypt.hash).to.have.been.calledWith 'soupyTyphoid'
+        expect(@bcrypt.hash).to.have.been.calledWith 'soupyTyphoid'
 
       it 'should update the database with new properties', ->
-          expect(@db.update).to.have.been.calledWith @updateDevice
+        updateDevice = 
+          uuid: 'Typhoid'
+          U1: 
+            secret: 'islandLife'
+            signature: 'veryTasty'
+        expect(@db.update).to.have.been.calledWith updateDevice
           
     describe 'when the token is verified', ->
       beforeEach ->
-        @device = [ {uuid: 'Foot', U1: reset: 'Hair'} ]
-        @updateDevice = { U1 : { email: 'harry@hendersons.com', password: 'forestLife', signature: 'aliens', reset: null }}
-        @sut.findSigned = sinon.stub().yields(null, @device)
+        @sut.findSigned = sinon.stub().yields(null, uuid: 'Foot', U1: reset: 'Hair')
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields 'forestLife'
         @meshblu.sign = sinon.stub().returns 'aliens'
         @sut.reset 'Foot', 'Big', 'Rawr'
 
       it 'should update the database with new properties', ->
-          expect(@db.update).to.have.been.calledWith @updateDevice
+        updateDevice = 
+          uuid: 'Foot'
+          U1:
+            secret: 'forestLife'
+            signature: 'aliens'
+        expect(@db.update).to.have.been.calledWith updateDevice

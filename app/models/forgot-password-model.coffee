@@ -1,5 +1,4 @@
 _ = require 'lodash'
-SecureMeshbluDb = require './secure-meshblu-db'
 
 class ForgotPasswordModel
   constructor : (uuid, mailgunKey, dependencies) ->
@@ -10,12 +9,10 @@ class ForgotPasswordModel
     @mailgun = new Mailgun mailgunKey
     @db = dependencies?.db
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
-    @findSigned = SecureMeshbluDb.findSigned
 
   forgot :(email, callback=->) =>
-    @findSigned "#{@uuid}.email" : email, (error, devices=[]) =>
-      return callback new Error('Device not found for email address') if error? or !devices.length
-      device = _.first devices
+    @findSigned "#{@uuid}.email" : email, (error, device) =>
+      return callback new Error('Device not found for email address') if error? or !device?
 
       resetToken = @uuidGenerator.v4()
       device[@uuid] = @sign device[@uuid]
@@ -36,19 +33,31 @@ class ForgotPasswordModel
         )
 
   reset : (uuid, token, password, callback=->) => 
-    @findSigned uuid: uuid, (error, devices=[]) =>
-      return callback new Error('Device not found') if error? or !devices.length
-      device = _.first devices
+    @findSigned uuid: uuid, (error, device) =>
+      return callback new Error('Device not found') if error? or !device?
       return callback new Error('Invalid Token') unless @bcrypt.compareSync(token + uuid, device[@uuid].reset)
       @bcrypt.hash password + uuid, 10, (hash) =>
-        device[@uuid].reset = null
-        @sign device[@uuid]        
-        @db.update( {uuid: uuid}, _.pick( @uuid, device), callback)
+        delete device[@uuid].reset
+        device[@uuid].secret = hash
+        device[@uuid] = @sign device[@uuid]
+
+        query = _.pick device, 'uuid', @uuid
+
+        @db.update query, callback
+
+  findSigned: (query, callback=->) ->
+    @db.find query , (error, devices)=>
+      return callback error if error?
+      device = _.find devices, (device) =>
+        try
+          @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
+
+      callback null, device
         
 
   sign : (data) =>
-    delete data.signature
-    data.signature = @meshblu.sign data
+    data = _.cloneDeep data
+    data.signature = @meshblu.sign _.omit(data, 'signature')
     data
 
 module.exports = ForgotPasswordModel
