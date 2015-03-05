@@ -1,6 +1,6 @@
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
 MeshbluDB = require 'meshblu-db'
-debug = require 'debug' 'meshblu-email-password-authenticator:device-controller'
+debug = require('debug')('meshblu-email-password-authenticator:device-controller')
 _ = require 'lodash'
 
 class DeviceController

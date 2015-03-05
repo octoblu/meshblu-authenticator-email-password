@@ -4,7 +4,7 @@ debug = require('debug')('meshblu-email-password-authenticator:sessions-controll
 url = require 'url'
 
 class SessionController
-  constructor: (meshbluJSON, meshblu) ->
+  constructor: (meshbluJSON, @meshblu) ->
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name
     @meshbludb = new MeshbluDB @meshblu
