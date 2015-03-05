@@ -2,6 +2,7 @@
 MeshbluDB = require 'meshblu-db'
 debug = require('debug')('meshblu-email-password-authenticator:device-controller')
 _ = require 'lodash'
+validator = require 'validator'
 
 class DeviceController
   constructor: (meshbluJSON, @meshblu) ->
@@ -11,6 +12,8 @@ class DeviceController
 
   create: (request, response) =>
     {email,password} = request.body
+    return response.status(422).send new Error ('Invalid email') unless validator.isEmail(email)
+
     deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     query[@authenticatorUuid + '.id'] = email
