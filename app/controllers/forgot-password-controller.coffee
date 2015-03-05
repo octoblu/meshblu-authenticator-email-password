@@ -16,7 +16,9 @@ class ForgotPasswordController
       return response.send(201)
 
   reset: (request, response) =>
-    @forgotPasswordModel.reset request.body.device, request.body.token, request.body.password, (error) =>
+    {device,token,password} = request.body
+    return response.status(422).send() unless device? && token? && password?
+    @forgotPasswordModel.reset device, token, password, (error) =>
       return response.status(500).send(error.message) if error
       response.send(201)
 
