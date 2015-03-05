@@ -14,7 +14,7 @@ class SessionController
     deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     query[@authenticatorUuid + '.id'] = email
-    device = 
+    device =
       type: 'octoblu:user'
 
     deviceFindCallback = (error, foundDevice) =>
@@ -22,19 +22,18 @@ class SessionController
       debug 'device find', foundDevice
 
       return response.status(401).send error unless foundDevice
-      
+
       debug 'about to generateAndStoreToken', uuid: foundDevice.uuid
       @meshblu.generateAndStoreToken uuid: foundDevice.uuid, (device) =>
-        return response.status(201).send(device) unless callbackUrl?
-        
+        return response.status(201).send(device:device) unless callbackUrl?
+
         uriParams = url.parse callbackUrl
         uriParams.query ?= {}
         uriParams.query.uuid = device.uuid
         uriParams.query.token = device.token
         uri = url.format uriParams
 
-        device.callbackUrl = uri
-        response.status(201).location(uri).send(device)
+        response.status(201).location(uri).send(device: device, callbackUrl: uri)
 
     deviceModel.findVerified query, password, deviceFindCallback
 

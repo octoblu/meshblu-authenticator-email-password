@@ -23,10 +23,20 @@ class DeviceController
     debug 'device query', query
     deviceModel.create query, device, email, password, (error, createdDevice) =>
       if error?
-        if error.message == DeviceAuthenticator.ERROR_DEVICE_ALREADY_EXISTS 
+        if error.message == DeviceAuthenticator.ERROR_DEVICE_ALREADY_EXISTS
           return response.status(401).json error: "Unable to create user"
         return response.status(500).send(error)
 
-      response.status(201).json createdDevice
+      @meshblu.generateAndStoreToken uuid: createdDevice.uuid, (device) =>
+        {callbackUrl} = request.body
+        return response.status(201).send(device: device) unless callbackUrl?
+
+        uriParams = url.parse callbackUrl
+        uriParams.query ?= {}
+        uriParams.query.uuid = device.uuid
+        uriParams.query.token = device.token
+        uri = url.format uriParams
+        response.status(201).location(uri).send(device: device, callbackUrl: uri)
+
 
 module.exports = DeviceController
