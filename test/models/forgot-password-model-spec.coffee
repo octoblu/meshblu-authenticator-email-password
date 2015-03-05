@@ -102,7 +102,7 @@ describe 'ForgotPasswordModel', ->
         @sut.mailgun = sendText: sinon.stub()
         @meshblu.sign.returns 'hello!'
         @uuidGenerator.v4.returns 'c'
-        @bcrypt.hash.yields 'hash-of-c'
+        @bcrypt.hash.yields null, 'hash-of-c'
         @sut.forgot 'timber@waffle-iron.com'
 
       it 'should call bcrypt.hash with the generated uuid and the uuid of the device', ->
@@ -139,7 +139,7 @@ describe 'ForgotPasswordModel', ->
         @db.update = sinon.stub()
         @sut.mailgun = sendText: sinon.stub()
         @meshblu.sign.returns 'axed!'
-        @bcrypt.hash.yields 'hash-of-d'
+        @bcrypt.hash.yields null, 'hash-of-d'
         @uuidGenerator.v4.returns 'd'
 
         @sut.forgot 'timber@waffle-iron.com'
@@ -242,7 +242,7 @@ describe 'ForgotPasswordModel', ->
         @device = uuid: 'Typhoid', U1: reset: 'Chef'
         @sut.findSigned = sinon.stub().yields null, @device
         @bcrypt.compareSync = sinon.stub().returns true
-        @bcrypt.hash = sinon.stub().yields 'islandLife'
+        @bcrypt.hash = sinon.stub().yields null, 'islandLife'
         @meshblu.sign = sinon.stub().returns 'veryTasty'
         @sut.reset 'Typhoid', 'Mary', 'soupy'
 
@@ -261,7 +261,7 @@ describe 'ForgotPasswordModel', ->
       beforeEach ->
         @sut.findSigned = sinon.stub().yields(null, uuid: 'Foot', U1: reset: 'Hair')
         @bcrypt.compareSync = sinon.stub().returns true
-        @bcrypt.hash = sinon.stub().yields 'forestLife'
+        @bcrypt.hash = sinon.stub().yields null, 'forestLife'
         @meshblu.sign = sinon.stub().returns 'aliens'
         @sut.reset 'Foot', 'Big', 'Rawr'
 
