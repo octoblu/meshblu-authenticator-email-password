@@ -1,29 +1,31 @@
 _ = require 'lodash'
-
+debug = require('debug')('meshblu-email-password-authenticator:forgot-password-model')
 class ForgotPasswordModel
   constructor : (uuid, mailgunKey, dependencies) ->
     @uuid = uuid;
-    @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
     @meshblu = dependencies?.meshblu
-    Mailgun = dependencies?.Mailgun || require('mailgun').Mailgun
-    @mailgun = new Mailgun mailgunKey
     @db = dependencies?.db
+
+    @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
+    Mailgun = dependencies?.Mailgun || require('mailgun').Mailgun
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
-  forgot :(email, callback=->) =>
-    @findSigned "#{@uuid}.email" : email, (error, device) =>
-      return callback new Error('Device not found for email address') if error? or !device?
+    @mailgun = new Mailgun mailgunKey
 
+  forgot :(email, callback=->) =>
+    debug "looks like #{email} forgot their password."
+    @findSigned "#{@uuid}.id" : email, (error, device) =>
+      return callback new Error('Device not found for email address') if error? or !device?
+      debug "found device #{JSON.stringify(device)}"
       resetToken = @uuidGenerator.v4()
 
       @bcrypt.hash resetToken + device.uuid, 10, (hash)=>
         device[@uuid].reset = hash
         device[@uuid] = @sign device[@uuid]
 
-        @db.update(
-          {uuid : device.uuid}
-          _.pick(device, @uuid)
-        )
+        debug "updating device #{JSON.stringify(device)}"
+
+        @db.update(device)
 
         @mailgun.sendText(
           'no-reply@octoblu.com'
@@ -49,6 +51,7 @@ class ForgotPasswordModel
 
   findSigned: (query, callback=->) ->
     @db.find query , (error, devices)=>
+      debug "found error: #{error?.message} devices: #{JSON.stringify(devices)}"
       return callback error if error?
       device = _.find devices, (device) =>
         try
