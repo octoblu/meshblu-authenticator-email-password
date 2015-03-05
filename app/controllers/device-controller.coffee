@@ -3,6 +3,7 @@ MeshbluDB = require 'meshblu-db'
 debug = require('debug')('meshblu-email-password-authenticator:device-controller')
 _ = require 'lodash'
 validator = require 'validator'
+url = require 'url'
 
 class DeviceController
   constructor: (meshbluJSON, @meshblu) ->
