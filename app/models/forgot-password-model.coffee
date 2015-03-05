@@ -27,7 +27,7 @@ class ForgotPasswordModel
 
         @db.update(device)
 
-        body = "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+        body = "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}&email=#{email}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
         debug 'email:', body
 
         @mailgun.sendText(
