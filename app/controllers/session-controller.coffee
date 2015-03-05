@@ -25,14 +25,13 @@ class SessionController
       
       debug 'about to generateAndStoreToken', uuid: foundDevice.uuid
       @meshblu.generateAndStoreToken uuid: foundDevice.uuid, (device) =>
-        debug 'got called back'
-        return response.send(device) unless callbackUrl?
+        return response.status(201).send(device) unless callbackUrl?
         
         uriParams = url.parse callbackUrl
         uriParams.query ?= {}
         uriParams.query.uuid = device.uuid
         uriParams.query.token = device.token
-        debug 'about to redirect', url.format uriParams
+
         response.redirect url.format uriParams
 
     deviceModel.findVerified query, password, deviceFindCallback
