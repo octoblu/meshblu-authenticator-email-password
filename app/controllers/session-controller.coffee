@@ -31,8 +31,10 @@ class SessionController
         uriParams.query ?= {}
         uriParams.query.uuid = device.uuid
         uriParams.query.token = device.token
+        uri = url.format uriParams
 
-        response.redirect url.format uriParams
+        device.callbackUrl = uri
+        response.status(201).location(uri).send(device)
 
     deviceModel.findVerified query, password, deviceFindCallback
 

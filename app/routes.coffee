@@ -1,3 +1,4 @@
+cors = require 'cors'
 DeviceController  = require './controllers/device-controller'
 SessionController = require './controllers/session-controller'
 
@@ -7,6 +8,7 @@ class Routes
     @sessionController = new SessionController meshbluJSON, meshblu
 
   register: =>
+    @app.options '*', cors()
     @app.get  '/', (request, response) => response.status(200).send status: 'online'
     @app.post '/devices', @deviceController.create
     @app.post '/sessions', @sessionController.create
