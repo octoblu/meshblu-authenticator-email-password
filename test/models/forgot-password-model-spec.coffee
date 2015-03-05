@@ -1,4 +1,5 @@
 ForgotPasswordModel = require '../../app/models/forgot-password-model'
+_ = require 'lodash'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
@@ -12,7 +13,7 @@ describe 'ForgotPasswordModel', ->
       sign: sinon.stub()
       verify: sinon.stub().returns true
     }
-    @bcrypt = { hash: sinon.stub().yields 'random-hash' }
+    @bcrypt = { hash: sinon.stub().yields( null, 'random-hash'), compareSync: sinon.spy() }
     @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, meshblu: @meshblu, bcrypt: @bcrypt
     @sut = new ForgotPasswordModel 'U1', 'mailgun_key', @dependencies
 
@@ -171,37 +172,95 @@ describe 'ForgotPasswordModel', ->
     it 'should exist', ->
       expect(@sut.reset).to.exist
 
-    describe 'when called with a token', -> 
+    describe 'when called with a uuid', -> 
+      beforeEach -> 
+        @sut.findSigned = sinon.stub()        
+        @sut.reset('Pilgrim')
+
+      it 'should call findSigned with that uuid', ->
+        expect(@sut.findSigned).to.have.been.calledWith uuid: 'Pilgrim'
+
+    describe 'when called with a uuid', -> 
       beforeEach -> 
         @sut.findSigned = sinon.stub()
-        @sut.reset('12345')
+        @sut.reset('Monk')
 
-      it 'should call findSigned with the token', -> 
-        expect(@sut.findSigned).to.have.been.calledWith('U1.reset' : '12345')
-
-    describe 'when called with different token', -> 
-      beforeEach -> 
-        @sut.findSigned = sinon.stub()
-        @sut.reset('41414')
-
-      it 'should call findSigned with the token', -> 
-        expect(@sut.findSigned).to.have.been.calledWith('U1.reset' : '41414')
+      it 'should call findSigned with some other uuid', ->
+        expect(@sut.findSigned).to.have.been.calledWith uuid: 'Monk'
 
 
-    describe 'when it is instantiated with a different uuid', ->
+    describe 'when findSigned yields some devices whose hashes don\'t match', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'U2-The-Band', 'mailgun_key', @dependencies
-        @sut.findSigned = sinon.stub()
-        @sut.reset('Trogdor')
+        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Tuck', U1: reset: 'Piglet'} ]
+        @sut.reset 'Tuck', 'Friar', 'password', (@error) =>
 
-      it 'should call findSigned with the different uuid and reset token', ->
-        expect(@sut.findSigned).to.have.been.calledWith('U2-The-Band.reset' : 'Trogdor')
+      it 'should call the callback with an error', ->
+        expect(@error).to.exist
+
+      it 'should call brypt.compareSync with the uuid and token', ->
+        expect(@bcrypt.compareSync).to.have.been.calledWith 'FriarTuck', 'Piglet'
+
+    describe 'when findSigned yields some other devices whose hashes don\'t match', ->
+      beforeEach ->
+        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Drew', U1: reset: 'Detective'} ]
+        @sut.reset 'Drew', 'Nancy'
+
+      it 'should call brypt.compareSync with the uuid and token', ->
+        expect(@bcrypt.compareSync).to.have.been.calledWith 'NancyDrew', 'Detective'
+
+    describe 'when sut is constructed with a different uuid and reset is called', ->
+      beforeEach ->
+        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
+        @sut.findSigned = sinon.stub().yields null, [ {uuid: 'Hood', Lifehouse: reset: 'LilJon'} ]
+        @sut.reset 'Hood', 'Robin'
+
+       it 'should call brypt.compareSync with the uuid and token', ->
+        expect(@bcrypt.compareSync).to.have.been.calledWith 'RobinHood', 'LilJon'
+
+    describe 'when no devices are returned', ->
+      beforeEach ->
+        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
+        @sut.findSigned = sinon.stub().yields null, [ ]
+        @sut.reset 'Hood', 'Robin', 'password', (@error) =>
 
 
-    describe 'when findSigned yields a device', ->        
+       it 'should call the callback with an error', ->
+        expect(@error).to.exist
 
+    describe 'when the token is verified', ->
+      beforeEach ->
+        @sut.findSigned = sinon.stub().yields(null, [ {uuid: 'Bunyan', U1: reset: 'Ox'} ])        
+        @bcrypt.compareSync = sinon.stub().returns true
+        @sut.reset 'Bunyan', 'Paul', 'knock-knock'
 
+      it 'should hash the new password with the uuid of the authenticator', ->
+          expect(@bcrypt.hash).to.have.been.calledWith 'knock-knockBunyan'
+          
+    describe 'when the token is verified', ->
+      beforeEach ->
+        @device = [ {uuid: 'Typhoid', U1: reset: 'Chef'} ]
+        @updateDevice = { U1 : { password: 'islandLife', signature: 'veryTasty', reset: null }}
+        @sut.findSigned = sinon.stub().yields(null, @device)
+        @bcrypt.compareSync = sinon.stub().returns true
+        @bcrypt.hash = sinon.stub().yields 'islandLife'
+        @meshblu.sign = sinon.stub().returns 'veryTasty'
+        @sut.reset 'Typhoid', 'Mary', 'soupy'
 
+      it 'should hash the new password with the uuid of the authenticator', ->
+          expect(@bcrypt.hash).to.have.been.calledWith 'soupyTyphoid'
 
+      it 'should update the database with new properties', ->
+          expect(@db.update).to.have.been.calledWith @updateDevice
+          
+    describe 'when the token is verified', ->
+      beforeEach ->
+        @device = [ {uuid: 'Foot', U1: reset: 'Hair'} ]
+        @updateDevice = { U1 : { email: 'harry@hendersons.com', password: 'forestLife', signature: 'aliens', reset: null }}
+        @sut.findSigned = sinon.stub().yields(null, @device)
+        @bcrypt.compareSync = sinon.stub().returns true
+        @bcrypt.hash = sinon.stub().yields 'forestLife'
+        @meshblu.sign = sinon.stub().returns 'aliens'
+        @sut.reset 'Foot', 'Big', 'Rawr'
 
-
+      it 'should update the database with new properties', ->
+          expect(@db.update).to.have.been.calledWith @updateDevice

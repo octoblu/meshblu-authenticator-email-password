@@ -35,8 +35,16 @@ class ForgotPasswordModel
           callback
         )
 
-  reset : (token) => 
-    @findSigned "#{@uuid}.reset" : token
+  reset : (uuid, token, password, callback=->) => 
+    @findSigned uuid: uuid, (error, devices=[]) =>
+      return callback new Error('Device not found') if error? or !devices.length
+      device = _.first devices
+      return callback new Error('Invalid Token') unless @bcrypt.compareSync(token + uuid, device[@uuid].reset)
+      @bcrypt.hash password + uuid, 10, (hash) =>
+        device[@uuid].reset = null
+        @sign device[@uuid]        
+        @db.update( {uuid: uuid}, _.pick( @uuid, device), callback)
+        
 
   sign : (data) =>
     delete data.signature
