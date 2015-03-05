@@ -72,7 +72,7 @@ describe 'ForgotPasswordModel', ->
           'no-reply@octoblu.com'
           'chopped@bits.com'
           'Reset Password'
-          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=1&device=D1">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
+          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=1&device=D1&email=chopped@bits.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
         )
 
 
@@ -92,7 +92,7 @@ describe 'ForgotPasswordModel', ->
           'no-reply@octoblu.com'
           'timber@waffle-iron.com'
           'Reset Password'
-          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=c&device=EriksDevice">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
+          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=c&device=EriksDevice&email=timber@waffle-iron.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
         )
 
     describe 'when the device is found and a reset UUID is generated', ->
@@ -102,7 +102,7 @@ describe 'ForgotPasswordModel', ->
         @sut.mailgun = sendText: sinon.stub()
         @meshblu.sign.returns 'hello!'
         @uuidGenerator.v4.returns 'c'
-        @bcrypt.hash.yields 'hash-of-c'
+        @bcrypt.hash.yields null, 'hash-of-c'
         @sut.forgot 'timber@waffle-iron.com'
 
       it 'should call bcrypt.hash with the generated uuid and the uuid of the device', ->
@@ -139,7 +139,7 @@ describe 'ForgotPasswordModel', ->
         @db.update = sinon.stub()
         @sut.mailgun = sendText: sinon.stub()
         @meshblu.sign.returns 'axed!'
-        @bcrypt.hash.yields 'hash-of-d'
+        @bcrypt.hash.yields null, 'hash-of-d'
         @uuidGenerator.v4.returns 'd'
 
         @sut.forgot 'timber@waffle-iron.com'
@@ -242,7 +242,7 @@ describe 'ForgotPasswordModel', ->
         @device = uuid: 'Typhoid', U1: reset: 'Chef'
         @sut.findSigned = sinon.stub().yields null, @device
         @bcrypt.compareSync = sinon.stub().returns true
-        @bcrypt.hash = sinon.stub().yields 'islandLife'
+        @bcrypt.hash = sinon.stub().yields null, 'islandLife'
         @meshblu.sign = sinon.stub().returns 'veryTasty'
         @sut.reset 'Typhoid', 'Mary', 'soupy'
 
@@ -261,7 +261,7 @@ describe 'ForgotPasswordModel', ->
       beforeEach ->
         @sut.findSigned = sinon.stub().yields(null, uuid: 'Foot', U1: reset: 'Hair')
         @bcrypt.compareSync = sinon.stub().returns true
-        @bcrypt.hash = sinon.stub().yields 'forestLife'
+        @bcrypt.hash = sinon.stub().yields null, 'forestLife'
         @meshblu.sign = sinon.stub().returns 'aliens'
         @sut.reset 'Foot', 'Big', 'Rawr'
 

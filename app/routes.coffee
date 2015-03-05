@@ -15,6 +15,7 @@ class Routes
     @app.post '/devices', @deviceController.create
     @app.post '/sessions', @sessionController.create
     @app.post '/forgot', @forgotPasswordController.forgot
+    @app.post '/reset', @forgotPasswordController.reset
 
 
 

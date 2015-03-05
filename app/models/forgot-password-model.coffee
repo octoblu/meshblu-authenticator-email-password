@@ -19,7 +19,7 @@ class ForgotPasswordModel
       debug "found device #{JSON.stringify(device)}"
       resetToken = @uuidGenerator.v4()
 
-      @bcrypt.hash resetToken + device.uuid, 10, (hash)=>
+      @bcrypt.hash resetToken + device.uuid, 10, (error, hash)=>
         device[@uuid].reset = hash
         device[@uuid] = @sign device[@uuid]
 
@@ -27,11 +27,14 @@ class ForgotPasswordModel
 
         @db.update(device)
 
+        body = "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}&email=#{email}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+        debug 'email:', body
+
         @mailgun.sendText(
           'no-reply@octoblu.com'
           email
           'Reset Password'
-          "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail",
+          body
           callback
         )
 
@@ -40,14 +43,15 @@ class ForgotPasswordModel
       return callback new Error('Device not found') if error? or !device?
       return callback new Error('Invalid Token') unless @bcrypt.compareSync(token + uuid, device[@uuid].reset)
 
-      @bcrypt.hash password + uuid, 10, (hash) =>
+      debug password + uuid
+      @bcrypt.hash password + uuid, 10, (error, hash) =>
         delete device[@uuid].reset
         device[@uuid].secret = hash
         device[@uuid] = @sign device[@uuid]
 
-        query = _.pick device, 'uuid', @uuid
+        debug 'updating device', device
 
-        @db.update query, callback
+        @db.update device, callback
 
   findSigned: (query, callback=->) ->
     @db.find query , (error, devices)=>
