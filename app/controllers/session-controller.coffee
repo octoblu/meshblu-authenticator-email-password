@@ -10,7 +10,7 @@ class SessionController
     @meshbludb = new MeshbluDB @meshblu
 
   create: (request, response) =>
-    {email,password} = request.body
+    {email,password,callbackUrl} = request.body
     deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     query[@authenticatorUuid + '.id'] = email
@@ -20,10 +20,19 @@ class SessionController
     deviceFindCallback = (error, foundDevice) =>
       debug 'device find error', error if error?
       debug 'device find', foundDevice
-      if foundDevice
-        return response.status(200).send()
-      response.status(401).send error
+
+      return response.status(401).send error unless foundDevice
       
+      debug 'about to generateAndStoreToken', uuid: foundDevice.uuid
+      @meshblu.generateAndStoreToken uuid: foundDevice.uuid, (device) =>
+        debug 'got called back'
+        uriParams = url.parse callbackUrl
+        uriParams.query ?= {}
+        uriParams.query.uuid = device.uuid
+        uriParams.query.token = device.token
+        debug 'about to redirect', url.format uriParams
+        response.redirect url.format uriParams
+
     deviceModel.findVerified query, password, deviceFindCallback
 
 module.exports = SessionController

@@ -12,7 +12,7 @@ class DeviceController
 
   create: (request, response) =>
     {email,password} = request.body
-    return response.status(422).send new Error ('Invalid email') unless validator.isEmail(email)
+    return response.status(422).send new Error('Invalid email') unless validator.isEmail(email)
 
     deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
