@@ -1,7 +1,7 @@
 _ = require 'lodash'
 debug = require('debug')('meshblu-email-password-authenticator:forgot-password-model')
 class ForgotPasswordModel
-  constructor : (uuid, mailgunKey, dependencies) ->
+  constructor : (uuid, mailgunKey, @password_reset_url, dependencies) ->
     @uuid = uuid;
     @meshblu = dependencies?.meshblu
     @db = dependencies?.db
@@ -31,7 +31,7 @@ class ForgotPasswordModel
           'no-reply@octoblu.com'
           email
           'Reset Password'
-          "You recently made a request to reset your password, click <a href=\"https://email-password.octoblu.com/reset?token=#{resetToken}&device=#{device.uuid}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail",
+          "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail",
           callback
         )
 

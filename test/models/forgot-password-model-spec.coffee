@@ -15,7 +15,7 @@ describe 'ForgotPasswordModel', ->
     }
     @bcrypt = { hash: sinon.stub().yields( null, 'random-hash'), compareSync: sinon.spy() }
     @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, meshblu: @meshblu, bcrypt: @bcrypt
-    @sut = new ForgotPasswordModel 'U1', 'mailgun_key', @dependencies
+    @sut = new ForgotPasswordModel 'U1', 'mailgun_key', 'https://email-password.octoblu.com', @dependencies
 
   describe 'constructor', ->
     it 'should instantiate a ForgotPasswordModel', ->
@@ -45,7 +45,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when sut is instantiated with a different uuid and forgot is called', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'R2D2', 'mailgun_key', @dependencies
+        @sut = new ForgotPasswordModel 'R2D2', 'mailgun_key', 'http://email-password.octoblu.com', @dependencies
         @sut.forgot 'dan@dan.com'
 
       it 'should call db.find with that new uuid', ->
@@ -212,7 +212,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when sut is constructed with a different uuid and reset is called', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
+        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', 'https://email-password.octoblu.com', @dependencies
         @sut.findSigned = sinon.stub().yields null, {uuid: 'Hood', Lifehouse: reset: 'LilJon'}
         @sut.reset 'Hood', 'Robin'
 
@@ -221,7 +221,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when no devices are returned', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', @dependencies
+        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', 'https://email-password.octoblu.com', @dependencies
         @sut.findSigned = sinon.stub().yields null, null
         @sut.reset 'Hood', 'Robin', 'password', (@error) =>
 
