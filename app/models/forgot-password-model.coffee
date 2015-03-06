@@ -1,5 +1,7 @@
 _ = require 'lodash'
 debug = require('debug')('meshblu-email-password-authenticator:forgot-password-model')
+url = require 'url'
+
 class ForgotPasswordModel
   constructor : (uuid, mailgunKey, @password_reset_url, dependencies) ->
     @uuid = uuid;
@@ -26,8 +28,14 @@ class ForgotPasswordModel
         debug "updating device #{JSON.stringify(device)}"
 
         @db.update(device)
+        uriParams = url.parse @password_reset_url + '/reset'
+        uriParams.query ?= {}
+        uriParams.query.token = resetToken
+        uriParams.query.device = device.uuid
+        uriParams.query.email = email
+        uri = url.format uriParams
 
-        body = "You recently made a request to reset your password, click <a href=\"#{@password_reset_url}/reset?token=#{resetToken}&device=#{device.uuid}&email=#{email}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+        body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
         debug 'email:', body
 
         @mailgun.sendText(

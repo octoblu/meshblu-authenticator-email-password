@@ -72,7 +72,7 @@ describe 'ForgotPasswordModel', ->
           'no-reply@octoblu.com'
           'chopped@bits.com'
           'Reset Password'
-          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=1&device=D1&email=chopped@bits.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
+          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=1&device=D1&email=chopped%40bits.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
         )
 
 
@@ -92,7 +92,7 @@ describe 'ForgotPasswordModel', ->
           'no-reply@octoblu.com'
           'timber@waffle-iron.com'
           'Reset Password'
-          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=c&device=EriksDevice&email=timber@waffle-iron.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
+          'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=c&device=EriksDevice&email=timber%40waffle-iron.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'
         )
 
     describe 'when the device is found and a reset UUID is generated', ->
