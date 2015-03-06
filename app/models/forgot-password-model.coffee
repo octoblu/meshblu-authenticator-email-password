@@ -43,6 +43,7 @@ class ForgotPasswordModel
           email
           'Reset Password'
           body
+          {'Content-Type': 'text/html'}
           callback
         )
 
