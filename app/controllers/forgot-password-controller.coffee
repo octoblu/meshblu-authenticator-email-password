@@ -7,7 +7,7 @@ class ForgotPasswordController
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name
     @meshbludb = new MeshbluDB @meshblu
-    @forgotPasswordModel = new ForgotPasswordModel(@authenticatorUuid, process.env.MAILGUN_API_KEY, process.env.PASSWORD_RESET_URL, { db: @meshbludb, meshblu: @meshblu})
+    @forgotPasswordModel = new ForgotPasswordModel(@authenticatorUuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: @meshbludb, meshblu: @meshblu})
 
   forgot: (request, response) =>
     @forgotPasswordModel.forgot request.body.email, (error, data) =>

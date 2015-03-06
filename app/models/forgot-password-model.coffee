@@ -3,16 +3,16 @@ debug = require('debug')('meshblu-email-password-authenticator:forgot-password-m
 url = require 'url'
 
 class ForgotPasswordModel
-  constructor : (uuid, mailgunKey, @password_reset_url, dependencies) ->
+  constructor : (uuid, mailgunKey, mailgunDomain, @password_reset_url, dependencies) ->
     @uuid = uuid;
     @meshblu = dependencies?.meshblu
     @db = dependencies?.db
 
     @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
-    Mailgun = dependencies?.Mailgun || require('mailgun').Mailgun
+    Mailgun = dependencies?.Mailgun || require('./mailgun')
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
-    @mailgun = new Mailgun mailgunKey
+    @mailgun = new Mailgun mailgunKey, mailgunDomain
 
   forgot :(email, callback=->) =>
     debug "looks like #{email} forgot their password."
@@ -38,12 +38,11 @@ class ForgotPasswordModel
         body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
         debug 'email:', body
 
-        @mailgun.sendText(
+        @mailgun.sendHtml(
           'no-reply@octoblu.com'
           email
           'Reset Password'
           body
-          {'Content-Type': 'text/html'}
           callback
         )
 
