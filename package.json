@@ -14,7 +14,7 @@
     "express": "^4.11.2",
     "lodash": "^3.3.1",
     "meshblu": "^1.18.0",
-    "meshblu-authenticator-core": "^1.2.2",
+    "meshblu-authenticator-core": "^1.2.4",
     "meshblu-db": "^1.0.0",
     "morgan": "^1.5.1",
     "node-uuid": "^1.4.2",
