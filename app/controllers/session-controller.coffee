@@ -21,7 +21,7 @@ class SessionController
       debug 'device find error', error if error?
       debug 'device find', foundDevice
 
-      return response.status(401).send error unless foundDevice
+      return response.status(401).send error.message unless foundDevice
 
       debug 'about to generateAndStoreToken', uuid: foundDevice.uuid
       @meshblu.generateAndStoreToken uuid: foundDevice.uuid, (device) =>

@@ -28,7 +28,7 @@ class DeviceController
       if error?
         if error.message == DeviceAuthenticator.ERROR_DEVICE_ALREADY_EXISTS
           return response.status(401).json error: "Unable to create user"
-        return response.status(500).send(error)
+        return response.status(500).send(error.message)
 
       @meshblu.generateAndStoreToken uuid: createdDevice.uuid, (device) =>
         {callbackUrl} = request.body
