@@ -13,25 +13,28 @@ describe 'DeviceController', ->
       token: 'clean-master'
 
     @deviceAuthenticator = 
-      create: sinon.stub()
+      prepare: sinon.stub()
 
     @sut = new DeviceController @meshbluJSON, @meshblu, @deviceAuthenticator
 
-  describe 'when the create function is called', ->
+  describe 'when the prepare function is called', ->
     describe 'when an uppercase email is passed in the request body', ->
       beforeEach ->
         @request = 
-          body: 
+          body:
             email: 'CATs@MeOW.CoM'
             password: 'cats are the best'
-        
+          
         @response = 
           status: sinon.stub()
           send: sinon.stub()
         
-        @device = type: 'octoblu:user'
-        @query = "#{@meshbluJSON.uuid}.id": 'cats@meow.com'
-        @sut.create @request, @response
+        @sut.prepare @request, @response, ->
       
       it 'should do a case insensitive search for the device', ->
-        expect(@deviceAuthenticator.create).to.have.been.calledWith @query, @device, 'cats@meow.com', 'cats are the best'      
+        expect(@request.email).to.equal 'cats@meow.com'
+
+
+
+
+

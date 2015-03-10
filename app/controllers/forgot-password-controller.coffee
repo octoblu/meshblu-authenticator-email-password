@@ -1,13 +1,9 @@
-MeshbluDB = require 'meshblu-db'
-ForgotPasswordModel = require '../models/forgot-password-model'
 debug = require('debug')('meshblu-email-password-authenticator:forgot-controller')
 
 class ForgotPasswordController
-  constructor: (meshbluJSON, @meshblu) ->
+  constructor: (meshbluJSON, @meshblu, @forgotPasswordModel) ->
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name
-    @meshbludb = new MeshbluDB @meshblu
-    @forgotPasswordModel = new ForgotPasswordModel(@authenticatorUuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: @meshbludb, meshblu: @meshblu})
 
   forgot: (request, response) =>
     @forgotPasswordModel.forgot request.body.email, (error, data) =>

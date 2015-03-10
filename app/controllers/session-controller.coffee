@@ -1,17 +1,14 @@
-{DeviceAuthenticator} = require 'meshblu-authenticator-core'
 MeshbluDB = require 'meshblu-db'
 debug = require('debug')('meshblu-email-password-authenticator:sessions-controller')
 url = require 'url'
 
 class SessionController
-  constructor: (meshbluJSON, @meshblu) ->
+  constructor: (meshbluJSON, @meshblu, @deviceAuthenticator) ->
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name
-    @meshbludb = new MeshbluDB @meshblu
 
   create: (request, response) =>
     {email,password,callbackUrl} = request.body
-    deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     query[@authenticatorUuid + '.id'] = email
     device =
@@ -35,6 +32,6 @@ class SessionController
 
         response.status(201).location(uri).send(device: device, callbackUrl: uri)
 
-    deviceModel.findVerified query, password, deviceFindCallback
+    @deviceAuthenticator.findVerified query, password, deviceFindCallback
 
 module.exports = SessionController
