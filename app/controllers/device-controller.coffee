@@ -8,7 +8,7 @@ url = require 'url'
 class DeviceController
   constructor: (meshbluJSON, @meshblu) ->
     @authenticatorUuid = meshbluJSON.uuid
-    @authenticatorName = meshbluJSON.name
+    @authenticatorName = meshbluJSON.name || 'meshblu-email-password-authenticator'
     @meshbludb = new MeshbluDB @meshblu
 
   prepare: (request, response, next) =>
