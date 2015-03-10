@@ -50,7 +50,7 @@ class DeviceController
         if error.message == DeviceAuthenticator.ERROR_DEVICE_NOT_FOUND
           return response.status(401).json error: "Unable to find device"
 
-        return response.status(500).send(error)
+        return response.status(500).json error: error.message
 
       @meshblu.generateAndStoreToken uuid: device.uuid, (device) =>
         return response.status(201).send(device: device) unless callbackUrl?
