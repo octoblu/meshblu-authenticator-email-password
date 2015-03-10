@@ -12,7 +12,8 @@ class Routes
   register: =>
     @app.options '*', cors()
     @app.get  '/', (request, response) => response.status(200).send status: 'online'
-    @app.post '/devices', @deviceController.create
+    @app.post '/devices', @deviceController.prepare, @deviceController.create
+    @app.put '/devices', @deviceController.prepare, @deviceController.update
     @app.post '/sessions', @sessionController.create
     @app.post '/forgot', @forgotPasswordController.forgot
     @app.post '/reset', @forgotPasswordController.reset
