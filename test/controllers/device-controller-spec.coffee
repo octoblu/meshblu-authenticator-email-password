@@ -8,12 +8,13 @@ describe 'DeviceController', ->
       update: sinon.stub()
       generateAndStoreToken: sinon.stub()
 
-    @meshbluJSON = {
+    @meshbluJSON = 
       uuid : 'efa781bb76904a888c31382d06d2e4c9'
       token: 'clean-master'
-    }
+
     @deviceAuthenticator = 
       create: sinon.stub()
+
     @sut = new DeviceController @meshbluJSON, @meshblu, @deviceAuthenticator
 
   describe 'when the create function is called', ->

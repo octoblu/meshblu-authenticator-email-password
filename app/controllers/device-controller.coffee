@@ -21,7 +21,6 @@ class DeviceController
 
     debug 'device query', query
     @deviceAuthenticator.create query, device, email, password, (error, createdDevice) =>
-      console.log "CATS"
       if error?
         if error.message == 'device already exists'
           return response.status(401).json error: "Unable to create user"
