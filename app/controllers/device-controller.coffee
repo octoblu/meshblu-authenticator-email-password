@@ -1,22 +1,18 @@
-{DeviceAuthenticator} = require 'meshblu-authenticator-core'
-MeshbluDB = require 'meshblu-db'
 debug = require('debug')('meshblu-email-password-authenticator:device-controller')
 _ = require 'lodash'
 validator = require 'validator'
 url = require 'url'
 
 class DeviceController
-  constructor: (meshbluJSON, @meshblu) ->
+  constructor: (meshbluJSON, @meshblu, @deviceAuthenticator) ->
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name
-    @meshbludb = new MeshbluDB @meshblu
-
+   
   create: (request, response) =>
     {email,password} = request.body
     return response.status(422).send new Error('Password required') if _.isEmpty(password)
     return response.status(422).send new Error('Invalid email') unless validator.isEmail(email)
 
-    deviceModel = new DeviceAuthenticator @authenticatorUuid, @authenticatorName, meshblu: @meshblu, meshbludb: @meshbludb
     query = {}
     email = email.toLowerCase()
     query[@authenticatorUuid + '.id'] = email
@@ -24,9 +20,10 @@ class DeviceController
       type: 'octoblu:user'
 
     debug 'device query', query
-    deviceModel.create query, device, email, password, (error, createdDevice) =>
+    @deviceAuthenticator.create query, device, email, password, (error, createdDevice) =>
+      console.log "CATS"
       if error?
-        if error.message == DeviceAuthenticator.ERROR_DEVICE_ALREADY_EXISTS
+        if error.message == 'device already exists'
           return response.status(401).json error: "Unable to create user"
         return response.status(500).send(error.message)
 
