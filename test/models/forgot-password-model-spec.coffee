@@ -111,6 +111,7 @@ describe 'ForgotPasswordModel', ->
 
       it 'should update the device record with the reset UUID', ->
         expect(@db.update).to.have.been.calledWith(
+          {uuid: 'k'}
           {
             uuid : 'k'
             U1:
@@ -146,6 +147,7 @@ describe 'ForgotPasswordModel', ->
 
       it 'should update the device record with the reset UUID', ->
         expect(@db.update).to.have.been.calledWith(
+          {uuid: "l"},
           {
             uuid : 'l'
             U1:
@@ -255,7 +257,7 @@ describe 'ForgotPasswordModel', ->
           U1:
             secret: 'islandLife'
             signature: 'veryTasty'
-        expect(@db.update).to.have.been.calledWith updateDevice
+        expect(@db.update).to.have.been.calledWith {uuid: 'Typhoid'}, updateDevice
 
     describe 'when the token is verified', ->
       beforeEach ->
@@ -271,4 +273,4 @@ describe 'ForgotPasswordModel', ->
           U1:
             secret: 'forestLife'
             signature: 'aliens'
-        expect(@db.update).to.have.been.calledWith updateDevice
+        expect(@db.update).to.have.been.calledWith {uuid: 'Foot'}, updateDevice

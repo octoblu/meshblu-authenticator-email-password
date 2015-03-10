@@ -27,7 +27,7 @@ class ForgotPasswordModel
 
         debug "updating device #{JSON.stringify(device)}"
 
-        @db.update(device)
+        @db.update({uuid: device.uuid}, device)
         uriParams = url.parse @password_reset_url + '/reset'
         uriParams.query ?= {}
         uriParams.query.token = resetToken
@@ -59,7 +59,7 @@ class ForgotPasswordModel
 
         debug 'updating device', device
 
-        @db.update device, callback
+        @db.update {uuid: device.uuid}, device, callback
 
   findSigned: (query, callback=->) ->
     @db.find query , (error, devices)=>
