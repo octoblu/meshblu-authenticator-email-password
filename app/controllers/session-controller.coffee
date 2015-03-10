@@ -1,4 +1,3 @@
-MeshbluDB = require 'meshblu-db'
 debug = require('debug')('meshblu-email-password-authenticator:sessions-controller')
 url = require 'url'
 
@@ -10,6 +9,7 @@ class SessionController
   create: (request, response) =>
     {email,password,callbackUrl} = request.body
     query = {}
+    email = email.toLowerCase()
     query[@authenticatorUuid + '.id'] = email
     device =
       type: 'octoblu:user'
