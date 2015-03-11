@@ -11,7 +11,7 @@ class Routes
     meshbludb                 = new MeshbluDB meshblu
     @deviceAuthenticator      = new DeviceAuthenticator meshbluJSON.uuid, meshbluJSON.name, {meshblu: meshblu, meshbludb: meshbludb}
     @deviceController         = new DeviceController meshbluJSON, meshblu, @deviceAuthenticator
-    @forgotPasswordModel      = new ForgotPasswordModel meshbluJSON.Uuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: meshbludb, meshblu: meshblu}
+    @forgotPasswordModel      = new ForgotPasswordModel meshbluJSON.uuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: meshbludb, meshblu: meshblu}
     @forgotPasswordController = new ForgotPasswordController meshbluJSON, meshblu, @forgotPasswordModel
     @sessionController        = new SessionController meshbluJSON, meshblu, @deviceAuthenticator
 
