@@ -27,24 +27,25 @@ class ForgotPasswordModel
 
         debug "updating device #{JSON.stringify(device)}"
 
-        @db.update({uuid: device.uuid}, device)
-        uriParams = url.parse @password_reset_url + '/reset'
-        uriParams.query ?= {}
-        uriParams.query.token = resetToken
-        uriParams.query.device = device.uuid
-        uriParams.query.email = email
-        uri = url.format uriParams
+        @db.update {uuid: device.uuid}, device, (error) =>
+          return callback error if error?
+          uriParams = url.parse @password_reset_url + '/reset'
+          uriParams.query ?= {}
+          uriParams.query.token = resetToken
+          uriParams.query.device = device.uuid
+          uriParams.query.email = email
+          uri = url.format uriParams
 
-        body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
-        debug 'email:', body
+          body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+          debug 'email:', body
 
-        @mailgun.sendHtml(
-          'no-reply@octoblu.com'
-          email
-          'Reset Password'
-          body
-          callback
-        )
+          @mailgun.sendHtml(
+            'no-reply@octoblu.com'
+            email
+            'Reset Password'
+            body
+            callback
+          )
 
   reset : (uuid, token, password, callback=->) =>
     @findSigned uuid: uuid, (error, device) =>
