@@ -27,7 +27,8 @@ app.use cors()
 conn = meshblu.createConnection meshbluJSON
 
 conn.on 'ready', ->
-  conn.whoami {}, (device) ->    
+  conn.whoami {}, (device) ->
+    console.log 'I am ' + device.uuid    
     conn.setPrivateKey(device.privateKey) unless conn.privateKey
 
 routes = new Routes app, meshbluJSON, conn

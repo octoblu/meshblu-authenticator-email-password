@@ -44,7 +44,7 @@ class DeviceController
           return response.status(401).json error: "Unable to create user"
 
         if error.message == DeviceAuthenticator.ERROR_DEVICE_NOT_FOUND
-          return response.status(401).json error: "Unable to find device"
+          return response.status(401).json error: "Unable to find user"
 
         return response.status(500).json error: error.message
 

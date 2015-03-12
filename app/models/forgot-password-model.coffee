@@ -3,7 +3,7 @@ debug = require('debug')('meshblu-email-password-authenticator:forgot-password-m
 url = require 'url'
 
 class ForgotPasswordModel
-  constructor : (uuid, mailgunKey, mailgunDomain, @password_reset_url, dependencies) ->
+  constructor : (uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
     @uuid = uuid;
     @meshblu = dependencies?.meshblu
     @db = dependencies?.db
@@ -25,11 +25,14 @@ class ForgotPasswordModel
         device[@uuid].reset = hash
         device[@uuid] = @sign device[@uuid]
 
-        debug "updating device #{JSON.stringify(device)}"
+        debug "updating device #{JSON.stringify(device, null, 2)}"
 
         @db.update {uuid: device.uuid}, device, (error) =>
+          debug "ERROR UPDATING DEVICE #{device.uuid}: #{error.message}" if error?
           return callback error if error?
-          uriParams = url.parse @password_reset_url + '/reset'
+          debug "updated device"
+
+          uriParams = url.parse @passwordResetUrl + '/reset'
           uriParams.query ?= {}
           uriParams.query.token = resetToken
           uriParams.query.device = device.uuid
@@ -62,8 +65,8 @@ class ForgotPasswordModel
 
         @db.update {uuid: device.uuid}, device, callback
 
-  findSigned: (query, callback=->) ->
-    @db.find query , (error, devices)=>
+  findSigned: (query, callback=->) =>
+    @db.find query, (error, devices) =>
       debug "found error: #{error?.message} devices: #{JSON.stringify(devices)}"
       return callback error if error?
       device = _.find devices, (device) =>
