@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
-    @db = find: sinon.stub(), update: sinon.stub()
+    @db = find: sinon.stub(), update: sinon.stub().yields null
     @Mailgun = sinon.spy()
     @Mailgun.prototype.sendHtml = sinon.spy()
     @uuidGenerator = {
@@ -161,7 +161,6 @@ describe 'ForgotPasswordModel', ->
     describe 'when mailgun.sendHtml yields an error', ->
       beforeEach ->
         @db.find.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
-        @db.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub().yields(new Error('Something terrible happened'))
 
         @meshblu.sign.returns 'axed!'

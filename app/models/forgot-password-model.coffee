@@ -3,7 +3,7 @@ debug = require('debug')('meshblu-email-password-authenticator:forgot-password-m
 url = require 'url'
 
 class ForgotPasswordModel
-  constructor : (uuid, mailgunKey, mailgunDomain, @password_reset_url, dependencies) ->
+  constructor : (uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
     @uuid = uuid;
     @meshblu = dependencies?.meshblu
     @db = dependencies?.db
@@ -25,26 +25,30 @@ class ForgotPasswordModel
         device[@uuid].reset = hash
         device[@uuid] = @sign device[@uuid]
 
-        debug "updating device #{JSON.stringify(device)}"
+        debug "updating device #{JSON.stringify(device, null, 2)}"
 
-        @db.update({uuid: device.uuid}, device)
-        uriParams = url.parse @password_reset_url + '/reset'
-        uriParams.query ?= {}
-        uriParams.query.token = resetToken
-        uriParams.query.device = device.uuid
-        uriParams.query.email = email
-        uri = url.format uriParams
+        @db.update {uuid: device.uuid}, device, (error) =>
+          debug "ERROR UPDATING DEVICE #{device.uuid}: #{error.message}" if error?
+          return callback error if error?
+          debug "updated device"
 
-        body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
-        debug 'email:', body
+          uriParams = url.parse @passwordResetUrl + '/reset'
+          uriParams.query ?= {}
+          uriParams.query.token = resetToken
+          uriParams.query.device = device.uuid
+          uriParams.query.email = email
+          uri = url.format uriParams
 
-        @mailgun.sendHtml(
-          'no-reply@octoblu.com'
-          email
-          'Reset Password'
-          body
-          callback
-        )
+          body = "You recently made a request to reset your password, click <a href=\"#{uri}\">here</a> to reset your password. If you didn't make this request please ignore this e-mail"
+          debug 'email:', body
+
+          @mailgun.sendHtml(
+            'no-reply@octoblu.com'
+            email
+            'Reset Password'
+            body
+            callback
+          )
 
   reset : (uuid, token, password, callback=->) =>
     @findSigned uuid: uuid, (error, device) =>
@@ -61,8 +65,8 @@ class ForgotPasswordModel
 
         @db.update {uuid: device.uuid}, device, callback
 
-  findSigned: (query, callback=->) ->
-    @db.find query , (error, devices)=>
+  findSigned: (query, callback=->) =>
+    @db.find query, (error, devices) =>
       debug "found error: #{error?.message} devices: #{JSON.stringify(devices)}"
       return callback error if error?
       device = _.find devices, (device) =>

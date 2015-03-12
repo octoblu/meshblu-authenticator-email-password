@@ -7,8 +7,11 @@ class ForgotPasswordController
 
   forgot: (request, response) =>
     @forgotPasswordModel.forgot request.body.email, (error, data) =>
-      return response.status(404).send(error.message) if error && error.message == 'Device not found for email address'
-      return response.status(500).send(error.message) if error
+      if error
+        return response.status(404).send(error.message) if error.message == 'Device not found for email address'
+        return response.status(401).send('Cannot write to this device') if error.message == 'unauthorized'
+        return response.status(500).send(error.message)
+
       return response.send(201)
 
   reset: (request, response) =>
