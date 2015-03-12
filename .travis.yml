@@ -3,14 +3,13 @@ sudo: false
 node_js:
 - '0.10'
 deploy:
-  provider: npm
+- provider: npm
   email: sqrt@octoblu.com
   api_key:
     secure: z8QyaAeU7KTPOaEQJu2LkoYF1FYsy5sWjqVfsuWn2n7TzJKzq0Io2qr9gcSKu/x19kKsAR+Jc2kmoNMxdy9TgHzA7GwIzMFTjxgAGk0tdv+ro8o/qliiGKXk16q0Q5JvS7pd6YhnE8SfUtq0WslOuzP1lINWu/a3YqLn1Z2LR4g=
   on:
     branch: master
-deploy:
-  provider: opsworks
+- provider: opsworks
   access_key_id: AKIAIT4X4NDGM2WVL6VA
   secret_access_key:
     secure: QDekpK87BkLanL1OK34qQPuaU+f5QH5Fv442DWLVtBFFC/01J+kxxow3P0rcO1rjcBTUKR4FJl5a55LMKOPwczCgEdUbreJ/vckDJuO5CSflq8ljxW6CedJCQk0BQ5wcdTWHLeS7wvs8RVcnT3krxPHy+wGOBTDeSBMs43BRveg=
