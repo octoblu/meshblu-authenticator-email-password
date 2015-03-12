@@ -3,8 +3,7 @@ debug = require('debug')('meshblu-email-password-authenticator:forgot-password-m
 url = require 'url'
 
 class ForgotPasswordModel
-  constructor : (uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
-    @uuid = uuid;
+  constructor : (@uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
     @meshblu = dependencies?.meshblu
     @db = dependencies?.db
 
