@@ -16,7 +16,8 @@ class ForgotPasswordModel
   forgot :(email, callback=->) =>
     debug "looks like #{email} forgot their password."
     @findSigned "#{@uuid}.id" : email, (error, device) =>
-      return callback new Error('Device not found for email address') if error? or !device?
+      return callback error if error?
+      return callback new Error('Device not found for email address') unless device?
       debug "found device #{JSON.stringify(device)}"
       resetToken = @uuidGenerator.v4()
 
