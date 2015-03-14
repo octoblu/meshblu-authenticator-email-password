@@ -69,9 +69,10 @@ class ForgotPasswordModel
       debug "found error: #{error?.message} devices: #{JSON.stringify(devices)}"
       return callback error if error?
       device = _.find devices, (device) =>
-        try
-          @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
+        debug "verifying", device[@uuid]
+        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
 
+      debug "matched", device
       callback null, device
 
 
