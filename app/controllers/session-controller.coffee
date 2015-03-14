@@ -28,7 +28,7 @@ class SessionController
         uriParams.query ?= {}
         uriParams.query.uuid = device.uuid
         uriParams.query.token = device.token
-        uri = url.format uriParams
+        uri = decodeURIComponent url.format(uriParams)
 
         response.status(201).location(uri).send(device: device, callbackUrl: uri)
 
