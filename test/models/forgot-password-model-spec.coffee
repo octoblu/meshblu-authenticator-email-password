@@ -43,6 +43,13 @@ describe 'ForgotPasswordModel', ->
       it 'should query meshbludb to find devices with that email', ->
         expect(@db.find).to.have.been.calledWith 'U1.id' : 'k@octoblu.com'
 
+    describe 'when called with cAtS@octoblu.com', ->
+      beforeEach ->
+        @sut.forgot 'cAtS@octoblu.com'
+
+      it 'should make the email case insensitive', ->
+        expect(@db.find).to.have.been.calledWith 'U1.id' : 'cats@octoblu.com'
+
     describe 'when sut is instantiated with a different uuid and forgot is called', ->
       beforeEach ->
         @sut = new ForgotPasswordModel 'R2D2', 'mailgun_key', 'mailgun_domain', 'http://email-password.octoblu.com', @dependencies

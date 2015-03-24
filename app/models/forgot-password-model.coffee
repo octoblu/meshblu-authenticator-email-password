@@ -14,6 +14,7 @@ class ForgotPasswordModel
     @mailgun = new Mailgun mailgunKey, mailgunDomain
 
   forgot :(email, callback=->) =>
+    email = email.toLowerCase()
     debug "looks like #{email} forgot their password."
     @findSigned "#{@uuid}.id" : email, (error, device) =>
       return callback error if error?
