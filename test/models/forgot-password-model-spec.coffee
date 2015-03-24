@@ -96,7 +96,7 @@ describe 'ForgotPasswordModel', ->
 
       it 'should call Mailgun.sendHtml with From, To, Subject and the result of the email template in the body', ->
         expect(@sut.mailgun.sendHtml).to.have.been.calledWith(
-          'no-reply@octoblu.com'
+          'no-reply@login-email.octoblu.com'
           'timber@waffle-iron.com'
           'Reset Password'
           'You recently made a request to reset your password, click <a href="https://email-password.octoblu.com/reset?token=c&device=EriksDevice&email=timber%40waffle-iron.com">here</a> to reset your password. If you didn\'t make this request please ignore this e-mail'

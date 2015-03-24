@@ -44,7 +44,7 @@ class ForgotPasswordModel
           debug 'email:', body
 
           @mailgun.sendHtml(
-            'no-reply@octoblu.com'
+            'no-reply@login-email.octoblu.com'
             email
             'Reset Password'
             body
