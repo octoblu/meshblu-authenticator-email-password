@@ -51,7 +51,8 @@ class DeviceController
       @meshblu.generateAndStoreToken uuid: device.uuid, (device) =>
         return response.status(201).send(device: device) unless callbackUrl?
 
-        uriParams = url.parse callbackUrl
+        uriParams = url.parse callbackUrl, true
+        delete uriParams.search
         uriParams.query ?= {}
         uriParams.query.uuid = device.uuid
         uriParams.query.token = device.token
