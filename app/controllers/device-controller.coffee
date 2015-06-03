@@ -4,7 +4,7 @@ validator = require 'validator'
 url = require 'url'
 
 class DeviceController
-  constructor: (meshbluJSON, @meshblu, @deviceAuthenticator) ->
+  constructor: (meshbluJSON, @meshbludb, @deviceAuthenticator) ->
     @authenticatorUuid = meshbluJSON.uuid
     @authenticatorName = meshbluJSON.name || 'meshblu-email-password-authenticator'
 
@@ -48,7 +48,7 @@ class DeviceController
 
         return response.status(500).json error: error.message
 
-      @meshblu.generateAndStoreToken uuid: device.uuid, (device) =>
+      @meshbludb.generateAndStoreToken device.uuid, (error, device) =>
         return response.status(201).send(device: device) unless callbackUrl?
 
         uriParams = url.parse callbackUrl, true

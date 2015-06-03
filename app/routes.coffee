@@ -7,13 +7,12 @@ ForgotPasswordModel      = require './models/forgot-password-model'
 SessionController        = require './controllers/session-controller'
 
 class Routes
-  constructor: (@app, meshbluJSON, meshblu) ->
-    meshbludb                 = new MeshbluDB meshblu
-    @deviceAuthenticator      = new DeviceAuthenticator meshbluJSON.uuid, meshbluJSON.name, {meshblu: meshblu, meshbludb: meshbludb}
-    @deviceController         = new DeviceController meshbluJSON, meshblu, @deviceAuthenticator
-    @forgotPasswordModel      = new ForgotPasswordModel meshbluJSON.uuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: meshbludb, meshblu: meshblu}
-    @forgotPasswordController = new ForgotPasswordController meshbluJSON, meshblu, @forgotPasswordModel
-    @sessionController        = new SessionController meshbluJSON, meshblu, @deviceAuthenticator
+  constructor: (@app, meshbluJSON, meshbludb) ->
+    @deviceAuthenticator      = new DeviceAuthenticator meshbluJSON.uuid, meshbluJSON.name, {meshbludb: meshbludb}
+    @deviceController         = new DeviceController meshbluJSON, meshbludb, @deviceAuthenticator
+    @forgotPasswordModel      = new ForgotPasswordModel meshbluJSON.uuid, process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN, process.env.PASSWORD_RESET_URL, { db: meshbludb }
+    @forgotPasswordController = new ForgotPasswordController meshbluJSON, @forgotPasswordModel
+    @sessionController        = new SessionController meshbluJSON, meshbludb, @deviceAuthenticator
 
   register: =>
     @app.options '*', cors()
@@ -23,7 +22,5 @@ class Routes
     @app.post '/sessions', @sessionController.create
     @app.post '/forgot', @forgotPasswordController.forgot
     @app.post '/reset', @forgotPasswordController.reset
-
-
 
 module.exports = Routes

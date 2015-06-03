@@ -3,18 +3,19 @@ _ = require 'lodash'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
-    @db = find: sinon.stub(), update: sinon.stub().yields null
+    @db =
+      find: sinon.stub()
+      update: sinon.stub().yields null
+      sign: sinon.stub()
+      verify: sinon.stub().returns true
+
     @Mailgun = sinon.spy()
     @Mailgun.prototype.sendHtml = sinon.spy()
     @uuidGenerator = {
       v4: sinon.stub()
     }
-    @meshblu = {
-      sign: sinon.stub()
-      verify: sinon.stub().returns true
-    }
     @bcrypt = { hash: sinon.stub().yields( null, 'random-hash'), compareSync: sinon.spy() }
-    @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, meshblu: @meshblu, bcrypt: @bcrypt
+    @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, bcrypt: @bcrypt
     @sut = new ForgotPasswordModel 'U1', 'mailgun_key', 'mailgun_domain', 'https://email-password.octoblu.com', @dependencies
 
   describe 'constructor', ->
@@ -107,7 +108,7 @@ describe 'ForgotPasswordModel', ->
         @db.find.yields null, [{ uuid : 'k', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
         @db.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @meshblu.sign.returns 'hello!'
+        @db.sign.returns 'hello!'
         @uuidGenerator.v4.returns 'c'
         @bcrypt.hash.yields null, 'hash-of-c'
         @sut.forgot 'timber@waffle-iron.com'
@@ -134,7 +135,7 @@ describe 'ForgotPasswordModel', ->
         @db.find.yields null, [{ uuid : 'l', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
         @db.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @meshblu.sign.returns 'hello!'
+        @db.sign.returns 'hello!'
         @uuidGenerator.v4.returns 's'
         @sut.forgot 'timber@waffle-iron.com'
 
@@ -146,7 +147,7 @@ describe 'ForgotPasswordModel', ->
         @db.find.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
         @db.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @meshblu.sign.returns 'axed!'
+        @db.sign.returns 'axed!'
         @bcrypt.hash.yields null, 'hash-of-d'
         @uuidGenerator.v4.returns 'd'
 
@@ -170,7 +171,7 @@ describe 'ForgotPasswordModel', ->
         @db.find.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
         @sut.mailgun = sendHtml: sinon.stub().yields(new Error('Something terrible happened'))
 
-        @meshblu.sign.returns 'axed!'
+        @db.sign.returns 'axed!'
         @uuidGenerator.v4.returns 'd'
 
         @sut.forgot 'timber@waffle-iron.com', (@error)=>
@@ -251,7 +252,7 @@ describe 'ForgotPasswordModel', ->
         @sut.findSigned = sinon.stub().yields null, @device
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields null, 'islandLife'
-        @meshblu.sign = sinon.stub().returns 'veryTasty'
+        @db.sign = sinon.stub().returns 'veryTasty'
         @sut.reset 'Typhoid', 'Mary', 'soupy'
 
       it 'should hash the new password with the uuid of the authenticator', ->
@@ -270,7 +271,7 @@ describe 'ForgotPasswordModel', ->
         @sut.findSigned = sinon.stub().yields(null, uuid: 'Foot', U1: reset: 'Hair')
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields null, 'forestLife'
-        @meshblu.sign = sinon.stub().returns 'aliens'
+        @db.sign = sinon.stub().returns 'aliens'
         @sut.reset 'Foot', 'Big', 'Rawr'
 
       it 'should update the database with new properties', ->

@@ -4,7 +4,6 @@ url = require 'url'
 
 class ForgotPasswordModel
   constructor : (@uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
-    @meshblu = dependencies?.meshblu
     @db = dependencies?.db
 
     @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
@@ -72,7 +71,7 @@ class ForgotPasswordModel
       return callback error if error?
       device = _.find devices, (device) =>
         debug "verifying", device[@uuid]
-        @meshblu.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
+        @db.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
 
       debug "matched", device
       callback null, device
@@ -80,7 +79,7 @@ class ForgotPasswordModel
 
   sign : (data) =>
     data = _.cloneDeep data
-    data.signature = @meshblu.sign _.omit(data, 'signature')
+    data.signature = @db.sign _.omit(data, 'signature')
     data
 
 module.exports = ForgotPasswordModel

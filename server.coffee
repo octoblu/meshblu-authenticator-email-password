@@ -3,7 +3,7 @@ morgan       = require 'morgan'
 errorHandler = require 'errorhandler'
 bodyParser   = require 'body-parser'
 cors         = require 'cors'
-meshblu      = require 'meshblu'
+MeshbluDB    = require 'meshblu-db'
 Routes       = require './app/routes'
 
 try
@@ -25,18 +25,15 @@ app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
 
-conn = meshblu.createConnection meshbluJSON
+meshbludb = new MeshbluDB meshbluJSON
 
-conn.on 'ready', ->
-  conn.whoami {}, (device) ->
-    console.log 'I am ' + device.uuid    
-    conn.setPrivateKey(device.privateKey) unless conn.privateKey
+meshbludb.findOne uuid: meshbluJSON.uuid, (error, device) ->
+  console.error error.message, error.stack if error?
+  console.log 'I am ' + device.uuid
+  meshbludb.setPrivateKey(device.privateKey) unless meshbludb.privateKey
 
-routes = new Routes app, meshbluJSON, conn
+routes = new Routes app, meshbluJSON, meshbludb
 routes.register()
 
 app.listen port, =>
   console.log "listening at localhost:#{port}"
-
-conn.on 'notReady', ->
-  console.error "Unable to establish a connection to meshblu"
