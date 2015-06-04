@@ -29,7 +29,7 @@ meshbludb = new MeshbluDB meshbluJSON
 
 meshbludb.findOne uuid: meshbluJSON.uuid, (error, device) ->
   console.error error.message, error.stack if error?
-  console.log 'I am ' + device.uuid
+  console.log "I am #{device.uuid}"
   meshbludb.setPrivateKey(device.privateKey) unless meshbludb.privateKey
 
 routes = new Routes app, meshbluJSON, meshbludb
