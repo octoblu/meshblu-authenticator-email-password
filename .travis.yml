@@ -4,16 +4,15 @@ node_js:
 - '0.10'
 deploy:
 - provider: opsworks
-  access_key_id: AKIAIT4X4NDGM2WVL6VA
-  secret_access_key:
-    secure: QDekpK87BkLanL1OK34qQPuaU+f5QH5Fv442DWLVtBFFC/01J+kxxow3P0rcO1rjcBTUKR4FJl5a55LMKOPwczCgEdUbreJ/vckDJuO5CSflq8ljxW6CedJCQk0BQ5wcdTWHLeS7wvs8RVcnT3krxPHy+wGOBTDeSBMs43BRveg=
+  access_key_id: AKIAJH2D5IPIRHYJT5IA
+  secret_access_key: &1
+    secure: "DxuJqX+30IEjhQeOvwlOS3kUb0L/i2Mr0lS+qCLrBBklVifbdLgwy6TbqJQUGBdZa+n9FCXLU4OhAeq/+pcGhe+IfW6Y5X9qYW3mrPgCPd0DtGbRSMMGs5/LUCkB6YmNmKRZ0E8iYR/a8Pm22aXp4ofEar4qdp9n/1OD28mLVss="
   app-id: 3d6a16ba-bb46-45ff-924c-ca05dbfc009f
   on:
     branch: master
 - provider: opsworks
-  access_key_id: AKIAIT4X4NDGM2WVL6VA
-  secret_access_key:
-    secure: QDekpK87BkLanL1OK34qQPuaU+f5QH5Fv442DWLVtBFFC/01J+kxxow3P0rcO1rjcBTUKR4FJl5a55LMKOPwczCgEdUbreJ/vckDJuO5CSflq8ljxW6CedJCQk0BQ5wcdTWHLeS7wvs8RVcnT3krxPHy+wGOBTDeSBMs43BRveg=
+  access_key_id: AKIAJH2D5IPIRHYJT5IA
+  secret_access_key: *1
   app-id: 1541e904-cf87-40e5-9f27-3bdbbf1544c2
   on:
     branch: staging
