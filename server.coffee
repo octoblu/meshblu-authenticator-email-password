@@ -5,6 +5,7 @@ bodyParser   = require 'body-parser'
 cors         = require 'cors'
 MeshbluDB    = require 'meshblu-db'
 Routes       = require './app/routes'
+meshbluHealthcheck = require 'express-meshblu-healthcheck'
 
 try
   meshbluJSON  = require './meshblu.json'
@@ -16,11 +17,12 @@ catch
     port:   process.env.MESHBLU_PORT
     name:   'Email Authenticator'
 
-port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 3003
+port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 80
 
 app = express()
 app.use morgan('dev')
 app.use errorHandler()
+app.use meshbluHealthcheck()
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
