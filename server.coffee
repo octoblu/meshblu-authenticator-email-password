@@ -17,7 +17,7 @@ catch
     port:   process.env.MESHBLU_PORT
     name:   'Email Authenticator'
 
-port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? 80
+port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? process.env.PORT ? 80
 
 app = express()
 app.use morgan('dev')
