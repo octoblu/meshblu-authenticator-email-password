@@ -1,4 +1,4 @@
-debug = require('debug')('meshblu-email-password-authenticator:device-controller')
+debug = require('debug')('meshblu-authenticator-email-password:device-controller')
 _ = require 'lodash'
 validator = require 'validator'
 url = require 'url'

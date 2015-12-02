@@ -1,4 +1,4 @@
-debug = require('debug')('meshblu-email-password-authenticator:forgot-controller')
+debug = require('debug')('meshblu-authenticator-email-password:forgot-controller')
 
 class ForgotPasswordController
   constructor: (meshbluJSON, @forgotPasswordModel) ->

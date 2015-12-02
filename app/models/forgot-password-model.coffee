@@ -1,5 +1,5 @@
 _ = require 'lodash'
-debug = require('debug')('meshblu-email-password-authenticator:forgot-password-model')
+debug = require('debug')('meshblu-authenticator-email-password:forgot-password-model')
 url = require 'url'
 
 class ForgotPasswordModel
@@ -16,6 +16,7 @@ class ForgotPasswordModel
     email = email.toLowerCase()
     debug "looks like #{email} forgot their password."
     @findSigned "#{@uuid}.id" : email, (error, device) =>
+      debug 'findSigned error', error.stack if error?
       return callback error if error?
       return callback new Error('Device not found for email address') unless device?
       debug "found device #{JSON.stringify(device)}"

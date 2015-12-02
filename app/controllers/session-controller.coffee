@@ -1,4 +1,4 @@
-debug = require('debug')('meshblu-email-password-authenticator:sessions-controller')
+debug = require('debug')('meshblu-authenticator-email-password:sessions-controller')
 url = require 'url'
 
 class SessionController
