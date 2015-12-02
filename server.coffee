@@ -30,12 +30,15 @@ app.use cors()
 meshbludb = new MeshbluDB meshbluJSON
 
 meshbludb.findOne uuid: meshbluJSON.uuid, (error, device) ->
-  console.error error.message, error.stack if error?
+  if error?
+    console.error error.message, error.stack
+    process.exit 1
+
   console.log "I am #{device.uuid}"
   meshbludb.setPrivateKey(device.privateKey) unless meshbludb.privateKey
 
-routes = new Routes app, meshbluJSON, meshbludb
-routes.register()
+  routes = new Routes app, meshbluJSON, meshbludb
+  routes.register()
 
-app.listen port, =>
-  console.log "listening at localhost:#{port}"
+  app.listen port, =>
+    console.log "listening at localhost:#{port}"
