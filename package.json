@@ -1,6 +1,6 @@
 {
   "name": "meshblu-authenticator-email-password",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Email & Password authenticator for Meshblu",
   "main": "command.coffee",
   "dependencies": {
@@ -13,7 +13,7 @@
     "express": "^4.11.2",
     "express-meshblu-healthcheck": "^1.0.1",
     "lodash": "^3.3.1",
-    "meshblu-authenticator-core": "^2.0.0",
+    "meshblu-authenticator-core": "^2.0.4",
     "meshblu-db": "^2.1.0",
     "morgan": "^1.5.1",
     "node-uuid": "^1.4.2",
