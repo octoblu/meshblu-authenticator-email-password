@@ -3,8 +3,8 @@ _ = require 'lodash'
 
 describe 'ForgotPasswordModel', ->
   beforeEach ->
-    @db =
-      find: sinon.stub()
+    @meshbluHttp =
+      devices: sinon.stub()
       update: sinon.stub().yields null
       sign: sinon.stub()
       verify: sinon.stub().returns true
@@ -15,8 +15,9 @@ describe 'ForgotPasswordModel', ->
       v4: sinon.stub()
     }
     @bcrypt = { hash: sinon.stub().yields( null, 'random-hash'), compareSync: sinon.spy() }
-    @dependencies = db: @db, Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, bcrypt: @bcrypt
-    @sut = new ForgotPasswordModel 'U1', 'mailgun_key', 'mailgun_domain', 'https://email-password.octoblu.com', @dependencies
+    @dependencies = Mailgun : @Mailgun, uuidGenerator: @uuidGenerator, bcrypt: @bcrypt
+
+    @sut = new ForgotPasswordModel {uuid: 'U1', mailgunKey: 'mailgun_key', mailgunDomain: 'mailgun_domain', passwordResetUrl: 'https://email-password.octoblu.com', @meshbluHttp}, @dependencies
 
   describe 'constructor', ->
     it 'should instantiate a ForgotPasswordModel', ->
@@ -34,34 +35,34 @@ describe 'ForgotPasswordModel', ->
       beforeEach ->
         @sut.forgot 'a@octoblu.com'
 
-      it 'should query meshbludb to find devices with that email', ->
-        expect(@db.find).to.have.been.calledWith 'U1.id' : 'a@octoblu.com'
+      it 'should query meshblumeshbluHttp to find devices with that email', ->
+        expect(@meshbluHttp.devices).to.have.been.calledWith 'U1.id' : 'a@octoblu.com'
 
     describe 'when called with a different email address', ->
      beforeEach ->
         @sut.forgot 'k@octoblu.com'
 
-      it 'should query meshbludb to find devices with that email', ->
-        expect(@db.find).to.have.been.calledWith 'U1.id' : 'k@octoblu.com'
+      it 'should query meshblumeshbluHttp to find devices with that email', ->
+        expect(@meshbluHttp.devices).to.have.been.calledWith 'U1.id' : 'k@octoblu.com'
 
     describe 'when called with cAtS@octoblu.com', ->
       beforeEach ->
         @sut.forgot 'cAtS@octoblu.com'
 
       it 'should make the email case insensitive', ->
-        expect(@db.find).to.have.been.calledWith 'U1.id' : 'cats@octoblu.com'
+        expect(@meshbluHttp.devices).to.have.been.calledWith 'U1.id' : 'cats@octoblu.com'
 
     describe 'when sut is instantiated with a different uuid and forgot is called', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'R2D2', 'mailgun_key', 'mailgun_domain', 'http://email-password.octoblu.com', @dependencies
+        @sut = new ForgotPasswordModel {uuid: 'R2D2', mailgunKey: 'mailgun_key', mailgunDomain: 'mailgun_domain', passwordResetUrl: 'https://email-password.octoblu.com', @meshbluHttp}, @dependencies
         @sut.forgot 'dan@dan.com'
 
-      it 'should call db.find with that new uuid', ->
-        expect(@db.find).to.have.been.calledWith 'R2D2.id' : 'dan@dan.com'
+      it 'should call meshbluHttp.devices with that new uuid', ->
+        expect(@meshbluHttp.devices).to.have.been.calledWith 'R2D2.id' : 'dan@dan.com'
 
     describe "when a device with the email address isn't found", ->
       beforeEach ->
-        @db.find.yields(null, [])
+        @meshbluHttp.devices.yields(null, [])
         @sut.forgot 'gza@wutang.com', (@error) =>
 
       it 'should yield an error', ->
@@ -69,7 +70,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found', ->
       beforeEach ->
-        @db.find.yields null,  [uuid: 'D1', U1: {}]
+        @meshbluHttp.devices.yields null,  [uuid: 'D1', U1: {}]
         @sut.mailgun = sendHtml: sinon.stub()
         @uuidGenerator.v4.returns '1'
 
@@ -86,7 +87,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when a device is found with a different UUID', ->
       beforeEach (done)->
-        @db.find.yields null, [{ uuid: 'EriksDevice', U1: {} }]
+        @meshbluHttp.devices.yields null, [{ uuid: 'EriksDevice', U1: {} }]
         @sut.mailgun = sendHtml: sinon.stub().yields(null, true)
         @uuidGenerator.v4.returns 'c'
 
@@ -105,10 +106,10 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when the device is found and a reset UUID is generated', ->
       beforeEach ->
-        @db.find.yields null, [{ uuid : 'k', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
-        @db.update = sinon.stub()
+        @meshbluHttp.devices.yields null, [{ uuid : 'k', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
+        @meshbluHttp.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @db.sign.returns 'hello!'
+        @meshbluHttp.sign.returns 'hello!'
         @uuidGenerator.v4.returns 'c'
         @bcrypt.hash.yields null, 'hash-of-c'
         @sut.forgot 'timber@waffle-iron.com'
@@ -118,8 +119,8 @@ describe 'ForgotPasswordModel', ->
 
 
       it 'should update the device record with the reset UUID', ->
-        expect(@db.update).to.have.been.calledWith(
-          {uuid: 'k'}
+        expect(@meshbluHttp.update).to.have.been.calledWith(
+          'k'
           {
             uuid : 'k'
             U1:
@@ -132,10 +133,10 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when the device is found and a different reset UUID is generated', ->
       beforeEach ->
-        @db.find.yields null, [{ uuid : 'l', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
-        @db.update = sinon.stub()
+        @meshbluHttp.devices.yields null, [{ uuid : 'l', U1: { id: 'biofuel@used.com', secret: 'pancakes' } }]
+        @meshbluHttp.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @db.sign.returns 'hello!'
+        @meshbluHttp.sign.returns 'hello!'
         @uuidGenerator.v4.returns 's'
         @sut.forgot 'timber@waffle-iron.com'
 
@@ -144,18 +145,18 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when the device is found and a reset UUID is generated', ->
       beforeEach ->
-        @db.find.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
-        @db.update = sinon.stub()
+        @meshbluHttp.devices.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
+        @meshbluHttp.update = sinon.stub()
         @sut.mailgun = sendHtml: sinon.stub()
-        @db.sign.returns 'axed!'
+        @meshbluHttp.sign.returns 'axed!'
         @bcrypt.hash.yields null, 'hash-of-d'
         @uuidGenerator.v4.returns 'd'
 
         @sut.forgot 'timber@waffle-iron.com'
 
       it 'should update the device record with the reset UUID', ->
-        expect(@db.update).to.have.been.calledWith(
-          {uuid: "l"},
+        expect(@meshbluHttp.update).to.have.been.calledWith(
+          "l"
           {
             uuid : 'l'
             U1:
@@ -168,10 +169,10 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when mailgun.sendHtml yields an error', ->
       beforeEach ->
-        @db.find.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
+        @meshbluHttp.devices.yields null, [{ uuid : 'l', U1: { id: 'slow.turning@windmill.com', secret: 'waffles' } }]
         @sut.mailgun = sendHtml: sinon.stub().yields(new Error('Something terrible happened'))
 
-        @db.sign.returns 'axed!'
+        @meshbluHttp.sign.returns 'axed!'
         @uuidGenerator.v4.returns 'd'
 
         @sut.forgot 'timber@waffle-iron.com', (@error)=>
@@ -221,7 +222,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when sut is constructed with a different uuid and reset is called', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', 'mailgun_domain', 'https://email-password.octoblu.com', @dependencies
+        @sut = new ForgotPasswordModel {uuid: 'Lifehouse', mailgunKey: 'mailgun_key', mailgunDomain: 'mailgun_domain', passwordResetUrl: 'https://email-password.octoblu.com', @meshbluHttp}, @dependencies
         @sut.findSigned = sinon.stub().yields null, {uuid: 'Hood', Lifehouse: reset: 'LilJon'}
         @sut.reset 'Hood', 'Robin'
 
@@ -230,7 +231,7 @@ describe 'ForgotPasswordModel', ->
 
     describe 'when no devices are returned', ->
       beforeEach ->
-        @sut = new ForgotPasswordModel 'Lifehouse', 'mailgun_key', 'mailgun_domain', 'https://email-password.octoblu.com', @dependencies
+        @sut = new ForgotPasswordModel {uuid: 'Lifehouse', mailgunKey: 'mailgun_key', mailgunDomain: 'mailgun_domain', passwordResetUrl: 'https://email-password.octoblu.com', @meshbluHttp}, @dependencies
         @sut.findSigned = sinon.stub().yields null, null
         @sut.reset 'Hood', 'Robin', 'password', (@error) =>
 
@@ -252,7 +253,7 @@ describe 'ForgotPasswordModel', ->
         @sut.findSigned = sinon.stub().yields null, @device
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields null, 'islandLife'
-        @db.sign = sinon.stub().returns 'veryTasty'
+        @meshbluHttp.sign = sinon.stub().returns 'veryTasty'
         @sut.reset 'Typhoid', 'Mary', 'soupy'
 
       it 'should hash the new password with the uuid of the authenticator', ->
@@ -264,14 +265,14 @@ describe 'ForgotPasswordModel', ->
           U1:
             secret: 'islandLife'
             signature: 'veryTasty'
-        expect(@db.update).to.have.been.calledWith {uuid: 'Typhoid'}, updateDevice
+        expect(@meshbluHttp.update).to.have.been.calledWith 'Typhoid', updateDevice
 
     describe 'when the token is verified', ->
       beforeEach ->
         @sut.findSigned = sinon.stub().yields(null, uuid: 'Foot', U1: reset: 'Hair')
         @bcrypt.compareSync = sinon.stub().returns true
         @bcrypt.hash = sinon.stub().yields null, 'forestLife'
-        @db.sign = sinon.stub().returns 'aliens'
+        @meshbluHttp.sign = sinon.stub().returns 'aliens'
         @sut.reset 'Foot', 'Big', 'Rawr'
 
       it 'should update the database with new properties', ->
@@ -280,4 +281,4 @@ describe 'ForgotPasswordModel', ->
           U1:
             secret: 'forestLife'
             signature: 'aliens'
-        expect(@db.update).to.have.been.calledWith {uuid: 'Foot'}, updateDevice
+        expect(@meshbluHttp.update).to.have.been.calledWith 'Foot', updateDevice

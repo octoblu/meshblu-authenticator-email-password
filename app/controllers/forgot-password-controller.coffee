@@ -1,9 +1,7 @@
 debug = require('debug')('meshblu-authenticator-email-password:forgot-controller')
 
 class ForgotPasswordController
-  constructor: (meshbluJSON, @forgotPasswordModel) ->
-    @authenticatorUuid = meshbluJSON.uuid
-    @authenticatorName = meshbluJSON.name
+  constructor: ({@forgotPasswordModel}) ->
 
   forgot: (request, response) =>
     @forgotPasswordModel.forgot request.body.email, (error, data) =>

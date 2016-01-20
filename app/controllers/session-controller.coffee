@@ -2,17 +2,13 @@ debug = require('debug')('meshblu-authenticator-email-password:sessions-controll
 url = require 'url'
 
 class SessionController
-  constructor: (meshbluJSON, @meshbludb, @deviceAuthenticator) ->
-    @authenticatorUuid = meshbluJSON.uuid
-    @authenticatorName = meshbluJSON.name
+  constructor: ({@meshbluHttp, @deviceModel}) ->
 
   create: (request, response) =>
     {email,password,callbackUrl} = request.body
     query = {}
     email = email.toLowerCase()
-    query[@authenticatorUuid + '.id'] = email
-    device =
-      type: 'octoblu:user'
+    query[@deviceModel.authenticatorUuid + '.id'] = email
 
     deviceFindCallback = (error, foundDevice) =>
       debug 'device find error', error if error?
@@ -21,7 +17,7 @@ class SessionController
       return response.status(401).send error?.message unless foundDevice
 
       debug 'about to generateAndStoreToken', foundDevice.uuid
-      @meshbludb.generateAndStoreToken foundDevice.uuid, (error, device) =>
+      @meshbluHttp.generateAndStoreToken foundDevice.uuid, (error, device) =>
         return response.status(201).send(device:device) unless callbackUrl?
 
         uriParams = url.parse callbackUrl, true
@@ -33,6 +29,6 @@ class SessionController
 
         response.status(201).location(uri).send(device: device, callbackUrl: uri)
 
-    @deviceAuthenticator.findVerified query, password, deviceFindCallback
+    @deviceModel.findVerified query: query, password: password, deviceFindCallback
 
 module.exports = SessionController

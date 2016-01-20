@@ -1,12 +1,11 @@
 _ = require 'lodash'
 debug = require('debug')('meshblu-authenticator-email-password:forgot-password-model')
 url = require 'url'
+UUID = require 'uuid'
 
 class ForgotPasswordModel
-  constructor : (@uuid, mailgunKey, mailgunDomain, @passwordResetUrl, dependencies) ->
-    @db = dependencies?.db
-
-    @uuidGenerator = dependencies?.uuidGenerator || require 'node-uuid'
+  constructor : ({@uuid, mailgunKey, mailgunDomain, @passwordResetUrl, @meshbluHttp},dependencies={}) ->
+    @uuidGenerator = dependencies?.uuidGenerator || UUID
     Mailgun = dependencies?.Mailgun || require('./mailgun')
     @bcrypt = dependencies?.bcrypt || require 'bcrypt'
 
@@ -28,7 +27,7 @@ class ForgotPasswordModel
 
         debug "updating device #{JSON.stringify(device, null, 2)}"
 
-        @db.update {uuid: device.uuid}, device, (error) =>
+        @meshbluHttp.update device.uuid, device, (error) =>
           debug "ERROR UPDATING DEVICE #{device.uuid}: #{error.message}" if error?
           return callback error if error?
           debug "updated device"
@@ -64,23 +63,22 @@ class ForgotPasswordModel
 
         debug 'updating device', device
 
-        @db.update {uuid: device.uuid}, device, callback
+        @meshbluHttp.update uuid, device, callback
 
   findSigned: (query, callback=->) =>
-    @db.find query, (error, devices) =>
+    @meshbluHttp.devices query, (error, devices) =>
       debug "found error: #{error?.message} devices: #{JSON.stringify(devices)}"
       return callback error if error?
       device = _.find devices, (device) =>
         debug "verifying", device[@uuid]
-        @db.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
+        @meshbluHttp.verify(_.omit( device[@uuid], 'signature' ), device[@uuid]?.signature)
 
       debug "matched", device
       callback null, device
 
-
   sign : (data) =>
     data = _.cloneDeep data
-    data.signature = @db.sign _.omit(data, 'signature')
+    data.signature = @meshbluHttp.sign _.omit(data, 'signature')
     data
 
 module.exports = ForgotPasswordModel

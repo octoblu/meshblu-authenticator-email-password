@@ -4,9 +4,7 @@ validator = require 'validator'
 url = require 'url'
 
 class DeviceController
-  constructor: (meshbluJSON, @meshbludb, @deviceAuthenticator) ->
-    @authenticatorUuid = meshbluJSON.uuid
-    @authenticatorName = meshbluJSON.name || 'meshblu-email-password-authenticator'
+  constructor: ({@meshbluHttp, @deviceModel}) ->
 
   prepare: (request, response, next) =>
     {email,password} = request.body
@@ -15,7 +13,7 @@ class DeviceController
 
     query = {}
     email = email.toLowerCase()
-    query[@authenticatorUuid + '.id'] = email
+    query[@deviceModel.authenticatorUuid + '.id'] = email
 
     request.email = email
     request.password = password
@@ -27,7 +25,13 @@ class DeviceController
     {deviceQuery, email, password} = request
     debug 'device query', deviceQuery
 
-    @deviceAuthenticator.create deviceQuery, type: 'octoblu:user', email, password, @reply(request.body.callbackUrl, response)
+    @deviceModel.create
+      query: deviceQuery
+      data:
+        type: 'octoblu:user'
+      user_id: email
+      secret: password
+    , @reply(request.body.callbackUrl, response)
 
   update: (request, response) =>
     {deviceQuery, email, password} = request
@@ -35,11 +39,17 @@ class DeviceController
     debug 'device query', deviceQuery
     return response.status(422).send 'Uuid required' if _.isEmpty(uuid)
 
-    @deviceAuthenticator.addAuth deviceQuery, uuid, email, password, @reply(request.body.callbackUrl, response)
+    @deviceModel.addAuth
+      query: deviceQuery
+      uuid: uuid
+      user_id: email
+      secret: password
+    , @reply(request.body.callbackUrl, response)
 
   reply: (callbackUrl, response) =>
     (error, device) =>
       if error?
+        debug 'got an error', error.message
         if error.message == 'device already exists'
           return response.status(401).json error: "Unable to create user"
 
@@ -48,7 +58,7 @@ class DeviceController
 
         return response.status(500).json error: error.message
 
-      @meshbludb.generateAndStoreToken device.uuid, (error, device) =>
+      @meshbluHttp.generateAndStoreToken device.uuid, (error, device) =>
         return response.status(201).send(device: device) unless callbackUrl?
 
         uriParams = url.parse callbackUrl, true

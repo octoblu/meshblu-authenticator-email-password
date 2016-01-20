@@ -3,9 +3,10 @@ morgan       = require 'morgan'
 errorHandler = require 'errorhandler'
 bodyParser   = require 'body-parser'
 cors         = require 'cors'
-MeshbluDB    = require 'meshblu-db'
+MeshbluHttp  = require 'meshblu-http'
 Routes       = require './app/routes'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
+{DeviceAuthenticator} = require 'meshblu-authenticator-core'
 
 try
   meshbluJSON  = require './meshblu.json'
@@ -15,7 +16,8 @@ catch
     token:  process.env.EMAIL_PASSWORD_AUTHENTICATOR_TOKEN
     server: process.env.MESHBLU_HOST
     port:   process.env.MESHBLU_PORT
-    name:   'Email Authenticator'
+
+meshbluJSON.name = process.env.EMAIL_PASSWORD_AUTHENTICATOR_NAME ? 'Email Authenticator'
 
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? process.env.PORT ? 80
 
@@ -27,18 +29,22 @@ app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
 
-meshbludb = new MeshbluDB meshbluJSON
+meshbluHttp = new MeshbluHttp meshbluJSON
 
-meshbludb.findOne uuid: meshbluJSON.uuid, (error, device) ->
+authenticatorUuid = meshbluJSON.uuid
+authenticatorName = meshbluJSON.name
+
+deviceModel = new DeviceAuthenticator {authenticatorUuid, authenticatorName, meshbluHttp}
+
+meshbluHttp.device meshbluJSON.uuid, (error, device) ->
   if error?
     console.error error.message, error.stack
     process.exit 1
 
-  console.log "I am #{device.uuid}"
-  meshbludb.setPrivateKey(device.privateKey) unless meshbludb.privateKey
+  meshbluHttp.setPrivateKey(device.privateKey) unless meshbluHttp.privateKey
 
-  routes = new Routes app, meshbluJSON, meshbludb
-  routes.register()
+routes = new Routes {app, meshbluHttp, deviceModel}
+routes.register()
 
-  app.listen port, =>
-    console.log "listening at localhost:#{port}"
+app.listen port, =>
+  console.log "listening at localhost:#{port}"
