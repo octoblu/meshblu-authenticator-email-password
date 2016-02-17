@@ -22,9 +22,9 @@ meshbluJSON.name = process.env.EMAIL_PASSWORD_AUTHENTICATOR_NAME ? 'Email Authen
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? process.env.PORT ? 80
 
 app = express()
+app.use meshbluHealthcheck()
 app.use morgan('dev')
 app.use errorHandler()
-app.use meshbluHealthcheck()
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
@@ -48,3 +48,7 @@ routes.register()
 
 app.listen port, =>
   console.log "listening at localhost:#{port}"
+
+process.on 'SIGTERM', =>
+  console.log 'SIGTERM caught, exiting'
+  process.exit 0
