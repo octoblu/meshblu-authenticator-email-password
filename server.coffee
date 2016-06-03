@@ -41,13 +41,18 @@ meshbluHttp.device meshbluJSON.uuid, (error, device) ->
     console.error error.message, error.stack
     process.exit 1
 
-  meshbluHttp.setPrivateKey(device.privateKey) unless meshbluHttp.privateKey
+  unless device.privateKey?
+    console.error 'meshblu-authenticator-email-password requires privateKey'
+    process.exit 1
+
+  meshbluHttp.setPrivateKey device.privateKey
+
+  app.listen port, =>
+    console.log "listening at localhost:#{port}"
 
 routes = new Routes {app, meshbluHttp, deviceModel}
 routes.register()
 
-app.listen port, =>
-  console.log "listening at localhost:#{port}"
 
 process.on 'SIGTERM', =>
   console.log 'SIGTERM caught, exiting'
