@@ -1,6 +1,6 @@
 {
   "name": "meshblu-authenticator-email-password",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Email & Password authenticator for Meshblu",
   "main": "command.coffee",
   "dependencies": {
@@ -12,6 +12,7 @@
     "errorhandler": "^1.3.4",
     "express": "^4.11.2",
     "express-meshblu-healthcheck": "^1.0.1",
+    "express-send-error": "^1.1.0",
     "lodash": "^3.3.1",
     "meshblu-authenticator-core": "^3.2.1",
     "meshblu-http": "^5.5.0",

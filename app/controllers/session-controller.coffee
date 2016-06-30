@@ -18,6 +18,7 @@ class SessionController
 
       debug 'about to generateAndStoreToken', foundDevice.uuid
       @meshbluHttp.generateAndStoreToken foundDevice.uuid, (error, device) =>
+        return response.sendError error if error?
         return response.status(201).send(device:device) unless callbackUrl?
 
         uriParams = url.parse callbackUrl, true

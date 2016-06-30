@@ -6,6 +6,7 @@ cors         = require 'cors'
 MeshbluHttp  = require 'meshblu-http'
 Routes       = require './app/routes'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
+sendError          = require 'express-send-error'
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
 
 try
@@ -25,6 +26,7 @@ app = express()
 app.use meshbluHealthcheck()
 app.use morgan('dev')
 app.use errorHandler()
+app.use sendError()
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
