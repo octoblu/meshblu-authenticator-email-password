@@ -1,12 +1,12 @@
-express      = require 'express'
-morgan       = require 'morgan'
-errorHandler = require 'errorhandler'
-bodyParser   = require 'body-parser'
-cors         = require 'cors'
-MeshbluHttp  = require 'meshblu-http'
-Routes       = require './app/routes'
+express            = require 'express'
+morgan             = require 'morgan'
+packageVersion     = require 'express-package-version'
+bodyParser         = require 'body-parser'
+cors               = require 'cors'
+MeshbluHttp        = require 'meshblu-http'
+OctobluRaven       = require 'octoblu-raven'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
-sendError          = require 'express-send-error'
+Routes             = require './app/routes'
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
 
 try
@@ -22,11 +22,17 @@ meshbluJSON.name = process.env.EMAIL_PASSWORD_AUTHENTICATOR_NAME ? 'Email Authen
 
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? process.env.PORT ? 80
 
+ravenExpress = new OctobluRaven().express()
+
 app = express()
+app.use ravenExpress.requestHandler()
+app.use cors()
+app.use ravenExpress.errorHandler()
+
 app.use meshbluHealthcheck()
-app.use morgan('dev')
-app.use errorHandler()
-app.use sendError()
+app.use packageVersion()
+
+app.use morgan 'dev', immediate: false unless @disableLogging
 app.use bodyParser.json()
 app.use bodyParser.urlencoded(extended: true)
 app.use cors()
