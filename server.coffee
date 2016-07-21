@@ -1,11 +1,12 @@
 express            = require 'express'
 morgan             = require 'morgan'
-packageVersion     = require 'express-package-version'
 bodyParser         = require 'body-parser'
 cors               = require 'cors'
 MeshbluHttp        = require 'meshblu-http'
 OctobluRaven       = require 'octoblu-raven'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
+packageVersion     = require 'express-package-version'
+sendError          = require 'express-send-error'
 Routes             = require './app/routes'
 {DeviceAuthenticator} = require 'meshblu-authenticator-core'
 
@@ -22,12 +23,13 @@ meshbluJSON.name = process.env.EMAIL_PASSWORD_AUTHENTICATOR_NAME ? 'Email Authen
 
 port = process.env.EMAIL_PASSWORD_AUTHENTICATOR_PORT ? process.env.PORT ? 80
 
-ravenExpress = new OctobluRaven().express()
+octobluRaven = new OctobluRaven()
+octobluRaven.patchGlobal()
 
 app = express()
-app.use ravenExpress.requestHandler()
+app.use octobluRaven.express().handleErrors()
+app.use sendError()
 app.use cors()
-app.use ravenExpress.errorHandler()
 
 app.use meshbluHealthcheck()
 app.use packageVersion()
