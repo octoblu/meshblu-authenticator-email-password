@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "mocha"
+    "test": "istanbul cover _mocha -- -R spec --require coffee-coverage/register-istanbul && mocha --reporter json > coverage/mocha.json"
   },
   "repository": {
     "type": "git",
