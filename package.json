@@ -1,6 +1,6 @@
 {
   "name": "meshblu-authenticator-email-password",
-  "version": "2.2.5",
+  "version": "2.3.0",
   "description": "Email & Password authenticator for Meshblu",
   "main": "command.coffee",
   "dependencies": {
